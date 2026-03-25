@@ -30,4 +30,25 @@ abstract final class AppStrings {
   static const String splashReadyMessage = 'Ready';
   static const String splashFallbackMessage =
       'Startup checks completed. Redirecting...';
+
+  static const String tabDashboard = 'Dashboard';
+  static const String tabProjects = 'Projects';
+  static const String tabTasks = 'Tasks';
+  static const String tabMap = 'Map';
+  static const String tabProfile = 'Profile';
+
+  static const String profileAccountSection = 'Account';
+  static const String profileWorkspaceSection = 'Workspace';
+  static const String profileNameLabel = 'Display name';
+  static const String profileRoleLabel = 'Role';
+  static const String defaultUserRole = 'Operations lead';
+  static const String profileEmailLabel = 'Email';
+  static const String profileSiteAccessLabel = 'Site access';
+  static const String profileNotificationsLabel = 'Notifications';
+  static const String profileNotificationsValue = 'Enabled';
+  static const String profileLogoutLabel = 'Logout';
+  static const String profileLogoutConfirmTitle = 'Logout';
+  static const String profileLogoutConfirmBody =
+      'Are you sure you want to sign out of ArchitectHub?';
+  static const String profileCancelAction = 'Cancel';
 }

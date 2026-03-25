@@ -1,50 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../core/constants/app_strings.dart';
+import '../../shared/presentation/widgets/common/corporate_app_bar.dart';
 
-class AppShellScaffold extends ConsumerWidget {
+class AppShellScaffold extends StatelessWidget {
   const AppShellScaffold({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
 
   static const List<_ShellTab> _tabs = [
     _ShellTab(
-      label: 'Dashboard',
-      title: 'Dashboard',
+      label: AppStrings.tabDashboard,
+      title: AppStrings.tabDashboard,
       icon: Icons.space_dashboard_rounded,
     ),
     _ShellTab(
-      label: 'Projects',
-      title: 'Projects',
+      label: AppStrings.tabProjects,
+      title: AppStrings.tabProjects,
       icon: Icons.apartment_rounded,
     ),
-    _ShellTab(label: 'Tasks', title: 'Tasks', icon: Icons.task_alt_rounded),
-    _ShellTab(label: 'Map', title: 'Map', icon: Icons.map_rounded),
-    _ShellTab(label: 'Profile', title: 'Profile', icon: Icons.person_rounded),
+    _ShellTab(
+      label: AppStrings.tabTasks,
+      title: AppStrings.tabTasks,
+      icon: Icons.task_alt_rounded,
+    ),
+    _ShellTab(
+      label: AppStrings.tabMap,
+      title: AppStrings.tabMap,
+      icon: Icons.map_rounded,
+    ),
+    _ShellTab(
+      label: AppStrings.tabProfile,
+      title: AppStrings.tabProfile,
+      icon: Icons.person_rounded,
+    ),
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authControllerProvider);
+  Widget build(BuildContext context) {
     final activeTab = _tabs[navigationShell.currentIndex];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(activeTab.title),
-        actions: [
-          IconButton(
-            onPressed: authState.isSubmitting
-                ? null
-                : () {
-                    ref.read(authControllerProvider.notifier).logout();
-                  },
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-          ),
-        ],
-      ),
+      appBar: CorporateAppBar(title: activeTab.title, isRoot: true),
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
