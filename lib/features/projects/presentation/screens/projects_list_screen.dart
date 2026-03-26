@@ -67,7 +67,10 @@ class _ProjectsListScreenState extends ConsumerState<ProjectsListScreen> {
 
               return ProjectListItemCard(
                 project: project,
-                onTap: () => context.go(RouteNames.projectDetails(project.id)),
+                onTap: () => context.go(
+                  RouteNames.projectDetails(project.id),
+                  extra: project,
+                ),
               );
             },
           ),

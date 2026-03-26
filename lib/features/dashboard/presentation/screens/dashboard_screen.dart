@@ -57,9 +57,7 @@ class DashboardScreen extends ConsumerWidget {
             context.go(RouteNames.profile);
           },
           onOpenProjectChecklist: (project) {
-            ref.read(projectsQueryProvider.notifier).state = project.name;
-            ref.read(projectsStatusFilterProvider.notifier).state = null;
-            context.go(RouteNames.projects);
+            context.go(RouteNames.projectDetails(project.id), extra: project);
           },
           onOpenCategoryProjects: () {
             ref.read(projectsQueryProvider.notifier).state = '';

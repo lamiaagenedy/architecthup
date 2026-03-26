@@ -8,6 +8,8 @@ import '../../features/maps/presentation/screens/map_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/project_details/presentation/screens/project_details_screen.dart';
 import '../../features/projects/presentation/screens/projects_list_screen.dart';
+import '../../features/projects/domain/entities/project_list_item.dart';
+import '../../features/quality/presentation/screens/quality_checklist_screen.dart';
 import '../../features/splash/presentation/providers/splash_flow_provider.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/tasks/presentation/screens/tasks_list_screen.dart';
@@ -92,7 +94,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: RouteNames.projectDetailsPath,
                     name: 'project-details',
-                    builder: (context, state) => const ProjectDetailsScreen(),
+                    builder: (context, state) {
+                      final extraProject = state.extra;
+                      if (extraProject is! ProjectListItem) {
+                        final projectId = state.pathParameters['projectId'];
+
+                        return ProjectDetailsScreen.missing(
+                          projectId: projectId ?? '',
+                        );
+                      }
+
+                      return ProjectDetailsScreen(project: extraProject);
+                    },
+                    routes: [
+                      GoRoute(
+                        path: RouteNames.projectChecklistPath,
+                        name: 'project-checklist',
+                        builder: (context, state) {
+                          final extraProject = state.extra;
+                          if (extraProject is! ProjectListItem) {
+                            final projectId = state.pathParameters['projectId'];
+
+                            return QualityChecklistScreen.missing(
+                              projectId: projectId ?? '',
+                            );
+                          }
+
+                          return QualityChecklistScreen(project: extraProject);
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),

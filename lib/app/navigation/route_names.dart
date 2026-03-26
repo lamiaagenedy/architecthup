@@ -4,9 +4,13 @@ abstract final class RouteNames {
   static const String dashboard = '/dashboard';
   static const String projects = '/projects';
   static const String projectDetailsPath = ':projectId';
+  static const String projectChecklistPath = 'checklist';
   static const String tasks = '/tasks';
   static const String map = '/map';
   static const String profile = '/profile';
 
   static String projectDetails(String projectId) => '$projects/$projectId';
+
+  static String projectChecklist(String projectId) =>
+      '${projectDetails(projectId)}/$projectChecklistPath';
 }

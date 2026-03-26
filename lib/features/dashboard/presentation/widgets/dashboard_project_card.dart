@@ -42,7 +42,7 @@ class DashboardProjectCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppDimensions.xs),
                     Text(
-                      '${project.location} • ${project.stage}',
+                      project.location,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -90,11 +90,6 @@ class DashboardProjectCard extends StatelessWidget {
                 ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
               ),
             ],
-          ),
-          const SizedBox(height: AppDimensions.md),
-          Text(
-            project.nextMilestone,
-            style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
       ),
