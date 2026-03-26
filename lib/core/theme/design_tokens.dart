@@ -9,6 +9,11 @@ abstract final class DesignTokens {
   static const double screenRadius = 28;
   static const double inputRadius = 18;
   static const double buttonRadius = 18;
+  static const double shellHeaderHeight = 168;
+  static const double shellHeaderCurveDepth = 26;
+  static const double shellHeaderHorizontalPadding = AppDimensions.lg;
+  static const double shellHeaderTopSpacing = AppDimensions.sm;
+  static const double shellHeaderBottomSpacing = 20;
   static const double pageMaxWidth = 1200;
   static const double authCardMaxWidth = 440;
   static const EdgeInsets pagePadding = EdgeInsets.all(AppDimensions.lg);

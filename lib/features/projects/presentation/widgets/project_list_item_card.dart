@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_dimensions.dart';
+import '../../../../core/theme/design_tokens.dart';
 import '../../domain/entities/project_list_item.dart';
 import 'project_status_badge.dart';
 
@@ -16,129 +17,157 @@ class ProjectListItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(24),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(AppDimensions.md),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: Theme.of(
-              context,
-            ).colorScheme.outlineVariant.withValues(alpha: 0.7),
+    final colorScheme = Theme.of(context).colorScheme;
+    final progressPercent = (project.progress * 100).round();
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: DesignTokens.shortAnimation,
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.all(AppDimensions.md),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.54),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.shadow.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        project.name,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      project.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        height: 1.12,
+                        color: colorScheme.onSurface,
                       ),
-                      const SizedBox(height: AppDimensions.xs),
-                      Text(
-                        project.location,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.md),
-                ProjectStatusBadge(status: project.status),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.md),
-            Text(
-              project.stage,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: AppDimensions.sm),
-            Row(
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    child: LinearProgressIndicator(
-                      value: project.progress,
-                      minHeight: 8,
                     ),
                   ),
-                ),
-                const SizedBox(width: AppDimensions.sm),
-                Text(
-                  '${(project.progress * 100).round()}%',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.md),
-            Wrap(
-              spacing: AppDimensions.md,
-              runSpacing: AppDimensions.sm,
-              children: [
-                _MetaText(label: 'Budget', value: project.budgetLabel),
-                _MetaText(label: 'Updated', value: project.updatedLabel),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.md),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    project.nextMilestone,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  const SizedBox(width: AppDimensions.sm),
+                  ProjectStatusBadge(status: project.status),
+                ],
+              ),
+              const SizedBox(height: AppDimensions.sm),
+              Row(
+                children: [
+                  Icon(
+                    Icons.place_outlined,
+                    size: 16,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: AppDimensions.xs),
+                  Expanded(
+                    child: Text(
+                      project.location,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        height: 1.35,
+                      ),
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: AppDimensions.lg),
+              _ProjectProgressBlock(
+                progress: project.progress,
+                progressPercent: progressPercent,
+              ),
+              const SizedBox(height: AppDimensions.md),
+              Text(
+                'Updated ${project.updatedLabel}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.4,
                 ),
-                const SizedBox(width: AppDimensions.sm),
-                const Icon(Icons.chevron_right_rounded),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _MetaText extends StatelessWidget {
-  const _MetaText({required this.label, required this.value});
+class _ProjectProgressBlock extends StatelessWidget {
+  const _ProjectProgressBlock({
+    required this.progress,
+    required this.progressPercent,
+  });
 
-  final String label;
-  final String value;
+  final double progress;
+  final int progressPercent;
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-        children: [
-          TextSpan(
-            text: '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.w700),
+    final colorScheme = Theme.of(context).colorScheme;
+    final progressColor = _progressColor(context, progressPercent);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$progressPercent%',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.w800,
           ),
-          TextSpan(text: value),
-        ],
-      ),
+        ),
+        const SizedBox(height: AppDimensions.sm),
+        Container(
+          height: 10,
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.72),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: FractionallySizedBox(
+              widthFactor: progress.clamp(0.0, 1.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: progressColor,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
+}
+
+Color _progressColor(BuildContext context, int progressPercent) {
+  final colorScheme = Theme.of(context).colorScheme;
+
+  if (progressPercent >= 90) {
+    return colorScheme.secondary;
+  }
+  if (progressPercent >= 65) {
+    return colorScheme.primary;
+  }
+
+  return Colors.orange.shade700;
 }

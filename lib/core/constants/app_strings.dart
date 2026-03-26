@@ -37,6 +37,18 @@ abstract final class AppStrings {
   static const String tabMap = 'Map';
   static const String tabProfile = 'Profile';
 
+  static const String shellHeaderEyebrow = 'ArchitectHub workspace';
+  static const String shellHeaderDashboardSubtitle =
+      'Monitor live inspections, projects, and team signals.';
+  static const String shellHeaderProjectsSubtitle =
+      'Track sites, progress, and project delivery status.';
+  static const String shellHeaderTasksSubtitle =
+      'Stay on top of operational tasks and site actions.';
+  static const String shellHeaderMapSubtitle =
+      'Review location coverage and field activity geography.';
+  static const String shellHeaderProfileSubtitle =
+      'Manage your account, access, and workspace preferences.';
+
   static const String profileAccountSection = 'Account';
   static const String profileWorkspaceSection = 'Workspace';
   static const String profileNameLabel = 'Display name';

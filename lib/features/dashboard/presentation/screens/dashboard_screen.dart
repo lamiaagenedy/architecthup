@@ -13,6 +13,11 @@ import '../../../projects/presentation/providers/projects_provider.dart';
 import '../../../projects/presentation/widgets/project_status_badge.dart';
 import '../providers/dashboard_operations_provider.dart';
 import '../providers/dashboard_provider.dart';
+import '../widgets/dashboard_attention_section.dart';
+import '../widgets/dashboard_category_summary_section.dart';
+import '../widgets/dashboard_hero_section.dart';
+import '../widgets/dashboard_metric_card.dart';
+import '../widgets/dashboard_my_tasks_section.dart';
 import '../widgets/dashboard_section_header.dart';
 import '../widgets/dashboard_state_views.dart';
 import '../widgets/score_circle.dart';
@@ -129,12 +134,12 @@ class _DashboardOperationsContent extends StatelessWidget {
                   onOpenProjectChecklist: onOpenProjectChecklist,
                 ),
                 const SizedBox(height: AppDimensions.xl),
-                _CategoryPerformanceSection(
+                DashboardCategorySummarySection(
                   categoryAverages: viewModel.categoryAverages,
                   onOpenCategoryProjects: onOpenCategoryProjects,
                 ),
                 const SizedBox(height: AppDimensions.xl),
-                _ProjectsNeedingAttentionSection(
+                DashboardAttentionSection(
                   attentionItems: viewModel.attentionItems,
                   onOpenProjectChecklist: onOpenProjectChecklist,
                 ),
@@ -178,177 +183,13 @@ class _DashboardHeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.lg),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colorScheme.primary,
-            colorScheme.primary.withValues(alpha: 0.82),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  dateLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.onPrimary.withValues(alpha: 0.92),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.sm,
-                  vertical: AppDimensions.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: colorScheme.onPrimary.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.circle,
-                      size: AppDimensions.sm,
-                      color: colorScheme.secondary,
-                    ),
-                    const SizedBox(width: AppDimensions.xs),
-                    Text(
-                      DashboardStrings.statusLive,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: colorScheme.onPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.md),
-          Text(
-            '${DashboardStrings.greetingPrefix}, $userName',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: colorScheme.onPrimary.withValues(alpha: 0.94),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.xs),
-          Text(
-            DashboardStrings.greetingHeadline,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: colorScheme.onPrimary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.sm),
-          Text(
-            DashboardStrings.greetingSubhead,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onPrimary.withValues(alpha: 0.9),
-            ),
-          ),
-          const SizedBox(height: AppDimensions.md),
-          Row(
-            children: [
-              Expanded(
-                child: _HeaderSummaryChip(
-                  label: DashboardStrings.summaryActiveProjects,
-                  value: '$activeProjectCount',
-                  onTap: onOpenProjects,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.sm),
-              Expanded(
-                child: _HeaderSummaryChip(
-                  label: DashboardStrings.summaryPendingTasks,
-                  value: '$pendingTaskCount',
-                  onTap: onOpenTasks,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeaderSummaryChip extends StatelessWidget {
-  const _HeaderSummaryChip({
-    required this.label,
-    required this.value,
-    required this.onTap,
-  });
-
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Material(
-      color: colorScheme.onPrimary.withValues(alpha: 0.13),
-      borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.md,
-            vertical: AppDimensions.sm,
-          ),
-          child: Row(
-            children: [
-              Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onPrimary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.xs),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: colorScheme.onPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return DashboardHeroSection(
+      userName: userName,
+      dateLabel: dateLabel,
+      activeProjectCount: activeProjectCount,
+      pendingTaskCount: pendingTaskCount,
+      onOpenProjects: onOpenProjects,
+      onOpenTasks: onOpenTasks,
     );
   }
 }
@@ -370,10 +211,11 @@ class _InspectionPerformanceSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const DashboardSectionHeader(
+          eyebrow: DashboardStrings.sectionInspectionEyebrow,
           title: DashboardStrings.sectionInspectionTitle,
           subtitle: DashboardStrings.sectionInspectionSubtitle,
         ),
-        const SizedBox(height: AppDimensions.md),
+        const SizedBox(height: AppDimensions.lg),
         IntrinsicHeight(
           child: Row(
             children: [
@@ -434,37 +276,42 @@ class _HighestRatedProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tintColor = Theme.of(context).colorScheme.secondary;
+
     return _InspectionMetricCard(
+      tintColor: tintColor,
+      label: DashboardStrings.highestRatedLabel,
+      title: project?.project.name ?? DashboardStrings.noInspectionsYet,
+      subtitle: DashboardStrings.dashboardMetricBestHelper,
+      icon: Icons.emoji_events_rounded,
       onTap: project == null
           ? onOpenProjects
           : () => onOpenProjectChecklist(project!.project),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Icon(Icons.emoji_events_rounded),
-          ),
-          const SizedBox(height: AppDimensions.sm),
-          ScoreCircle(score: project?.overallScore),
-          const SizedBox(height: AppDimensions.sm),
-          Text(
-            project?.project.name ?? DashboardStrings.noInspectionsYet,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: AppDimensions.xs),
-          Text(
-            DashboardStrings.highestRatedLabel,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w700,
-            ),
+          Row(
+            children: [
+              ScoreCircle(
+                score: project?.overallScore,
+                foregroundColor: tintColor,
+              ),
+              const SizedBox(width: AppDimensions.md),
+              Expanded(
+                child: Text(
+                  project?.overallScore == null
+                      ? DashboardStrings.noInspectionsYet
+                      : '${project!.overallScore}% quality score',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -485,43 +332,42 @@ class _LowestRatedProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tintColor = Theme.of(context).colorScheme.error;
+
     return _InspectionMetricCard(
+      tintColor: tintColor,
+      label: DashboardStrings.lowestRatedLabel,
+      title: project?.project.name ?? DashboardStrings.noInspectionsYet,
+      subtitle: DashboardStrings.dashboardMetricLowestHelper,
+      icon: Icons.warning_amber_rounded,
       onTap: project == null
           ? onOpenProjects
           : () => onOpenProjectChecklist(project!.project),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Icon(
-              Icons.warning_amber_rounded,
-              color: Theme.of(context).colorScheme.error,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.sm),
-          ScoreCircle(
-            score: project?.overallScore,
-            foregroundColor: Theme.of(context).colorScheme.error,
-          ),
-          const SizedBox(height: AppDimensions.sm),
-          Text(
-            project?.project.name ?? DashboardStrings.noInspectionsYet,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: AppDimensions.xs),
-          Text(
-            DashboardStrings.lowestRatedLabel,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w700,
-            ),
+          Row(
+            children: [
+              ScoreCircle(
+                score: project?.overallScore,
+                foregroundColor: tintColor,
+              ),
+              const SizedBox(width: AppDimensions.md),
+              Expanded(
+                child: Text(
+                  project?.overallScore == null
+                      ? DashboardStrings.noInspectionsYet
+                      : '${project!.overallScore}% quality score',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -543,31 +389,28 @@ class _InspectionsTodayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _InspectionMetricCard(
+      tintColor: Theme.of(context).colorScheme.primary,
+      label: DashboardStrings.inspectionsToday,
+      title: '$inspectedToday ${DashboardStrings.inspectedSuffix}',
+      subtitle: DashboardStrings.dashboardMetricTodayHelper,
+      icon: Icons.checklist_rounded,
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.checklist_rounded),
-          const SizedBox(height: AppDimensions.sm),
           Text(
             '$inspectedToday',
             style: Theme.of(
               context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: AppDimensions.xs),
-          Text(
-            DashboardStrings.inspectedToday,
-            style: Theme.of(
-              context,
-            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+            ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: AppDimensions.xs),
           Text(
             '$inspectedToday of $totalProjects ${DashboardStrings.projectsLabel}',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -584,32 +427,37 @@ class _OverallAverageScoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final toneColor = _scoreToneColor(context, score ?? 0);
+
     return _InspectionMetricCard(
+      tintColor: toneColor,
+      label: DashboardStrings.overallScoreLabel,
+      title: DashboardStrings.overallScoreLabel,
+      subtitle: DashboardStrings.dashboardMetricOverallHelper,
+      icon: Icons.analytics_rounded,
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.bar_chart_rounded,
-            color: _scoreToneColor(context, score ?? 0),
-          ),
-          const SizedBox(height: AppDimensions.sm),
           Text(
             score == null ? '-' : '$score',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w700,
               color: score == null
                   ? Theme.of(context).colorScheme.onSurface
-                  : _scoreToneColor(context, score!),
+                  : toneColor,
             ),
           ),
           const SizedBox(height: AppDimensions.xs),
           Text(
-            DashboardStrings.overallScoreLabel,
-            style: Theme.of(
-              context,
-            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+            score == null
+                ? DashboardStrings.noInspectionsYet
+                : 'Across all sites',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -618,34 +466,34 @@ class _OverallAverageScoreCard extends StatelessWidget {
 }
 
 class _InspectionMetricCard extends StatelessWidget {
-  const _InspectionMetricCard({required this.child, required this.onTap});
+  const _InspectionMetricCard({
+    required this.child,
+    required this.onTap,
+    required this.title,
+    required this.subtitle,
+    required this.label,
+    required this.icon,
+    required this.tintColor,
+  });
 
   final Widget child;
   final VoidCallback onTap;
+  final String title;
+  final String subtitle;
+  final String label;
+  final IconData icon;
+  final Color tintColor;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Material(
-      color: colorScheme.surface,
-      borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-            border: Border.all(
-              color: Theme.of(
-                context,
-              ).colorScheme.outlineVariant.withValues(alpha: 0.7),
-            ),
-          ),
-          child: child,
-        ),
-      ),
+    return DashboardMetricCard(
+      title: title,
+      subtitle: subtitle,
+      label: label,
+      icon: icon,
+      tintColor: tintColor,
+      onTap: onTap,
+      child: child,
     );
   }
 }
@@ -669,14 +517,13 @@ class _ProjectsProgressSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DashboardSectionHeader(
+          eyebrow: DashboardStrings.sectionProgressEyebrow,
           title: DashboardStrings.sectionProgressTitle,
           subtitle: DashboardStrings.sectionProgressSubtitle,
-          trailing: TextButton(
-            onPressed: onOpenProjects,
-            child: const Text(DashboardStrings.viewAll),
-          ),
+          actionText: DashboardStrings.viewAll,
+          onActionTap: onOpenProjects,
         ),
-        const SizedBox(height: AppDimensions.md),
+        const SizedBox(height: AppDimensions.lg),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.md),
@@ -774,208 +621,6 @@ class _ProjectProgressRow extends StatelessWidget {
   }
 }
 
-class _CategoryPerformanceSection extends StatelessWidget {
-  const _CategoryPerformanceSection({
-    required this.categoryAverages,
-    required this.onOpenCategoryProjects,
-  });
-
-  final List<DashboardCategoryScore> categoryAverages;
-  final VoidCallback onOpenCategoryProjects;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const DashboardSectionHeader(
-          title: DashboardStrings.sectionCategoryTitle,
-          subtitle: DashboardStrings.sectionCategorySubtitle,
-        ),
-        const SizedBox(height: AppDimensions.md),
-        GridView.builder(
-          itemCount: categoryAverages.length,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: AppDimensions.md,
-            crossAxisSpacing: AppDimensions.md,
-            childAspectRatio: 1.5,
-          ),
-          itemBuilder: (context, index) {
-            final item = categoryAverages[index];
-
-            return _CategoryPerformanceCard(
-              item: item,
-              onTap: onOpenCategoryProjects,
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class _CategoryPerformanceCard extends StatelessWidget {
-  const _CategoryPerformanceCard({required this.item, required this.onTap});
-
-  final DashboardCategoryScore item;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final toneColor = _scoreToneColor(context, item.score);
-
-    return Material(
-      color: toneColor.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-            border: Border.all(color: toneColor.withValues(alpha: 0.45)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(item.category.icon, color: toneColor),
-              const SizedBox(height: AppDimensions.sm),
-              Text(
-                item.category.label,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const Spacer(),
-              Text(
-                '${item.score}',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: toneColor,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProjectsNeedingAttentionSection extends StatelessWidget {
-  const _ProjectsNeedingAttentionSection({
-    required this.attentionItems,
-    required this.onOpenProjectChecklist,
-  });
-
-  final List<DashboardInspectionProject> attentionItems;
-  final ValueChanged<ProjectListItem> onOpenProjectChecklist;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const DashboardSectionHeader(
-          title: DashboardStrings.sectionAttentionTitle,
-          subtitle: DashboardStrings.sectionAttentionSubtitle,
-        ),
-        const SizedBox(height: AppDimensions.md),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.md),
-            child: attentionItems.isEmpty
-                ? Row(
-                    children: [
-                      Icon(
-                        Icons.verified_rounded,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                      const SizedBox(width: AppDimensions.sm),
-                      Expanded(
-                        child: Text(
-                          DashboardStrings.allProjectsPerformingWell,
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ),
-                    ],
-                  )
-                : Column(
-                    children: attentionItems
-                        .map(
-                          (item) => _AttentionProjectRow(
-                            item: item,
-                            onTap: () => onOpenProjectChecklist(item.project),
-                          ),
-                        )
-                        .toList(),
-                  ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AttentionProjectRow extends StatelessWidget {
-  const _AttentionProjectRow({required this.item, required this.onTap});
-
-  final DashboardInspectionProject item;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final underperforming = item.categoryScores.firstWhere(
-      (score) => score.score < 75,
-      orElse: () => item.categoryScores.first,
-    );
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppDimensions.md),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppDimensions.sm),
-          child: Row(
-            children: [
-              Icon(
-                Icons.warning_amber_rounded,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              const SizedBox(width: AppDimensions.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.project.name,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      '${underperforming.category.label}: ${underperforming.score}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right_rounded),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _QuickActionsSection extends StatelessWidget {
   const _QuickActionsSection({
     required this.onOpenProjects,
@@ -995,10 +640,11 @@ class _QuickActionsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const DashboardSectionHeader(
+          eyebrow: DashboardStrings.sectionQuickActionsEyebrow,
           title: DashboardStrings.sectionQuickActionsTitle,
           subtitle: DashboardStrings.sectionQuickActionsSubtitle,
         ),
-        const SizedBox(height: AppDimensions.md),
+        const SizedBox(height: AppDimensions.lg),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
@@ -1090,83 +736,7 @@ class _PersonalTasksSnapshotSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        DashboardSectionHeader(
-          title: DashboardStrings.sectionMyTasksTitle,
-          subtitle: DashboardStrings.sectionMyTasksSubtitle,
-          trailing: TextButton(
-            onPressed: onOpenTasks,
-            child: const Text(DashboardStrings.viewAllTasks),
-          ),
-        ),
-        const SizedBox(height: AppDimensions.md),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.md),
-            child: tasks.isEmpty
-                ? Text(
-                    DashboardStrings.noPendingTasksToday,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  )
-                : Column(
-                    children: tasks
-                        .map(
-                          (task) =>
-                              _TaskSnapshotRow(task: task, onTap: onOpenTasks),
-                        )
-                        .toList(),
-                  ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _TaskSnapshotRow extends StatelessWidget {
-  const _TaskSnapshotRow({required this.task, required this.onTap});
-
-  final DashboardTaskSnapshotItem task;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppDimensions.md),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppDimensions.xs),
-          child: Row(
-            children: [
-              Checkbox(value: false, onChanged: (_) => onTap()),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      task.title,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      task.projectName,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return DashboardMyTasksSection(tasks: tasks, onOpenTasks: onOpenTasks);
   }
 }
 

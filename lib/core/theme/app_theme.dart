@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
@@ -37,6 +38,7 @@ abstract final class AppTheme {
         backgroundColor: Colors.transparent,
         foregroundColor: scheme.onSurface,
         toolbarHeight: DesignTokens.appBarHeight,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
         titleTextStyle: baseTextTheme.titleLarge?.copyWith(
           color: scheme.onSurface,
           fontWeight: FontWeight.w700,

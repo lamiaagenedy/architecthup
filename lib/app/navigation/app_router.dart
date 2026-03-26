@@ -6,6 +6,7 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/maps/presentation/screens/map_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/project_details/presentation/screens/project_details_screen.dart';
 import '../../features/projects/presentation/screens/projects_list_screen.dart';
 import '../../features/splash/presentation/providers/splash_flow_provider.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
@@ -87,6 +88,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 name: 'projects',
                 pageBuilder: (context, state) =>
                     const NoTransitionPage(child: ProjectsListScreen()),
+                routes: [
+                  GoRoute(
+                    path: RouteNames.projectDetailsPath,
+                    name: 'project-details',
+                    builder: (context, state) => const ProjectDetailsScreen(),
+                  ),
+                ],
               ),
             ],
           ),
