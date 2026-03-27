@@ -10,7 +10,6 @@ import '../../../../core/theme/design_tokens.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../projects/domain/entities/project_list_item.dart';
 import '../../../projects/presentation/providers/projects_provider.dart';
-import '../../../projects/presentation/widgets/project_status_badge.dart';
 import '../providers/dashboard_operations_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/dashboard_attention_section.dart';
@@ -113,21 +112,10 @@ class _DashboardOperationsContent extends StatelessWidget {
                 _DashboardHeaderSection(
                   userName: userName,
                   dateLabel: viewModel.headerDateLabel,
-                  activeProjectCount: viewModel.activeProjectCount,
-                  pendingTaskCount: viewModel.pendingTaskCount,
-                  onOpenProjects: onOpenProjects,
-                  onOpenTasks: onOpenTasks,
                 ),
                 const SizedBox(height: AppDimensions.xl),
                 _InspectionPerformanceSection(
                   viewModel: viewModel,
-                  onOpenProjects: onOpenProjects,
-                  onOpenProjectChecklist: onOpenProjectChecklist,
-                ),
-                const SizedBox(height: AppDimensions.xl),
-                _ProjectsProgressSection(
-                  projects: viewModel.progressProjects,
-                  inspectionProjects: viewModel.inspectionProjects,
                   onOpenProjects: onOpenProjects,
                   onOpenProjectChecklist: onOpenProjectChecklist,
                 ),
@@ -166,29 +154,14 @@ class _DashboardHeaderSection extends StatelessWidget {
   const _DashboardHeaderSection({
     required this.userName,
     required this.dateLabel,
-    required this.activeProjectCount,
-    required this.pendingTaskCount,
-    required this.onOpenProjects,
-    required this.onOpenTasks,
   });
 
   final String userName;
   final String dateLabel;
-  final int activeProjectCount;
-  final int pendingTaskCount;
-  final VoidCallback onOpenProjects;
-  final VoidCallback onOpenTasks;
 
   @override
   Widget build(BuildContext context) {
-    return DashboardHeroSection(
-      userName: userName,
-      dateLabel: dateLabel,
-      activeProjectCount: activeProjectCount,
-      pendingTaskCount: pendingTaskCount,
-      onOpenProjects: onOpenProjects,
-      onOpenTasks: onOpenTasks,
-    );
+    return DashboardHeroSection(userName: userName, dateLabel: dateLabel);
   }
 }
 
@@ -492,129 +465,6 @@ class _InspectionMetricCard extends StatelessWidget {
       tintColor: tintColor,
       onTap: onTap,
       child: child,
-    );
-  }
-}
-
-class _ProjectsProgressSection extends StatelessWidget {
-  const _ProjectsProgressSection({
-    required this.projects,
-    required this.inspectionProjects,
-    required this.onOpenProjects,
-    required this.onOpenProjectChecklist,
-  });
-
-  final List<ProjectListItem> projects;
-  final List<DashboardInspectionProject> inspectionProjects;
-  final VoidCallback onOpenProjects;
-  final ValueChanged<ProjectListItem> onOpenProjectChecklist;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        DashboardSectionHeader(
-          eyebrow: DashboardStrings.sectionProgressEyebrow,
-          title: DashboardStrings.sectionProgressTitle,
-          subtitle: DashboardStrings.sectionProgressSubtitle,
-          actionText: DashboardStrings.viewAll,
-          onActionTap: onOpenProjects,
-        ),
-        const SizedBox(height: AppDimensions.lg),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.md),
-            child: Column(
-              children: projects
-                  .map(
-                    (project) => Padding(
-                      padding: const EdgeInsets.only(bottom: AppDimensions.md),
-                      child: _ProjectProgressRow(
-                        project: project,
-                        inspectionProject: inspectionProjects.firstWhere(
-                          (item) => item.project.id == project.id,
-                        ),
-                        onTap: () => onOpenProjectChecklist(project),
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ProjectProgressRow extends StatelessWidget {
-  const _ProjectProgressRow({
-    required this.project,
-    required this.inspectionProject,
-    required this.onTap,
-  });
-
-  final ProjectListItem project;
-  final DashboardInspectionProject inspectionProject;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppDimensions.md),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.sm),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      project.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.sm),
-                  if (inspectionProject.overallScore != null)
-                    Text(
-                      '${inspectionProject.overallScore}',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    )
-                  else
-                    Text(
-                      '-',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  const SizedBox(width: AppDimensions.sm),
-                  ProjectStatusBadge(status: project.status),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.sm),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(999),
-                child: LinearProgressIndicator(
-                  value: project.progress,
-                  minHeight: AppDimensions.sm,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

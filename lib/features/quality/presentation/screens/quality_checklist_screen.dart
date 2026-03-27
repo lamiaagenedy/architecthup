@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_dimensions.dart';
+import '../../../../core/theme/design_tokens.dart';
 import '../../../projects/domain/entities/project_list_item.dart';
 import '../constants/quality_checklist_items.dart';
 import '../providers/inspection_checklist_provider.dart';
@@ -47,15 +48,12 @@ class _QualityChecklistScreenState extends ConsumerState<QualityChecklistScreen>
       return _MissingChecklistView(projectId: widget._missingProjectId ?? '');
     }
 
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final compactScoreMaxHeight = screenHeight * 0.15;
+
     final state = ref.watch(inspectionChecklistProvider(project.id));
     final notifier = ref.read(inspectionChecklistProvider(project.id).notifier);
 
-    final housekeepingIndoorAverage = notifier.categoryAverage(
-      InspectionCategoryKey.housekeepingIndoor,
-    );
-    final housekeepingOutdoorAverage = notifier.categoryAverage(
-      InspectionCategoryKey.housekeepingOutdoor,
-    );
     final maintenanceAverage = notifier.categoryAverage(
       InspectionCategoryKey.maintenance,
     );
@@ -69,89 +67,133 @@ class _QualityChecklistScreenState extends ConsumerState<QualityChecklistScreen>
 
     return SafeArea(
       top: false,
-      child: Column(
-        children: [
-          Padding(
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text(
+            'Quality Checklist',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppDimensions.lg,
+                  AppDimensions.md,
+                  AppDimensions.lg,
+                  AppDimensions.sm,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: compactScoreMaxHeight),
+                  child: _InspectionSummaryCard(
+                    projectName: project.name,
+                    overallAverage: overallAverage,
+                    housekeepingAverage: _combinedAverage(
+                      state.entries[InspectionCategoryKey.housekeepingIndoor] ??
+                          const <InspectionItemState>[],
+                      state.entries[InspectionCategoryKey
+                              .housekeepingOutdoor] ??
+                          const <InspectionItemState>[],
+                    ),
+                    maintenanceAverage: maintenanceAverage,
+                    securityAverage: securityAverage,
+                    landscapeAverage: landscapeAverage,
+                  ),
+                ),
+              ),
+            ),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _PinnedTabBarDelegate(
+                child: Material(
+                  color: Theme.of(context).colorScheme.surface,
+                  child: TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    tabs: const [
+                      Tab(
+                        child: Text(
+                          '🏠 Housekeeping',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Tab(
+                        child: Text(
+                          '🔧 Maintenance',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Tab(
+                        child: Text(
+                          '🛡️ Security',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Tab(
+                        child: Text(
+                          '🌳 Landscape',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SliverFillRemaining(
+              hasScrollBody: true,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  QualityHousekeepingTab(projectId: project.id),
+                  QualityMaintenanceTab(projectId: project.id),
+                  QualitySecurityTab(projectId: project.id),
+                  QualityLandscapeTab(projectId: project.id),
+                ],
+              ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
             padding: const EdgeInsets.fromLTRB(
               AppDimensions.lg,
-              AppDimensions.md,
+              AppDimensions.sm,
               AppDimensions.lg,
               AppDimensions.sm,
             ),
-            child: _InspectionSummaryCard(
-              projectName: project.name,
-              overallAverage: overallAverage,
-              housekeepingAverage: _combinedAverage(
-                state.entries[InspectionCategoryKey.housekeepingIndoor] ??
-                    const [],
-                state.entries[InspectionCategoryKey.housekeepingOutdoor] ??
-                    const [],
-              ),
-              maintenanceAverage: maintenanceAverage,
-              securityAverage: securityAverage,
-              landscapeAverage: landscapeAverage,
-            ),
-          ),
-          Material(
-            color: Theme.of(context).colorScheme.surface,
-            child: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabs: const [
-                Tab(text: '🏠 Housekeeping'),
-                Tab(text: '🔧 Maintenance'),
-                Tab(text: '🛡️ Security'),
-                Tab(text: '🌳 Landscape'),
-              ],
-            ),
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                QualityHousekeepingTab(
-                  projectId: project.id,
-                  indoorAverage: housekeepingIndoorAverage,
-                  outdoorAverage: housekeepingOutdoorAverage,
-                ),
-                QualityMaintenanceTab(
-                  projectId: project.id,
-                  average: maintenanceAverage,
-                ),
-                QualitySecurityTab(
-                  projectId: project.id,
-                  average: securityAverage,
-                ),
-                QualityLandscapeTab(
-                  projectId: project.id,
-                  average: landscapeAverage,
-                ),
-              ],
-            ),
-          ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppDimensions.lg,
-                AppDimensions.sm,
-                AppDimensions.lg,
-                AppDimensions.md,
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Inspection saved')),
-                    );
-                  },
-                  child: const Text('Save Inspection'),
-                ),
+            child: SizedBox(
+              height: 44,
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Inspection saved')),
+                  );
+                },
+                child: const Text('Save Inspection'),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -177,52 +219,79 @@ class _InspectionSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.md),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outlineVariant),
+    return Card(
+      elevation: 1,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            projectName,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: AppDimensions.xs),
-          Text(
-            'Inspection Score: ${_format(overallAverage)}',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: colorScheme.primary,
+      child: Padding(
+        padding: AppDimensions.cardPadding,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    projectName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.sm),
+                Text(
+                  'Overall ${_format(overallAverage)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.primary,
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: AppDimensions.sm),
-          Wrap(
-            spacing: AppDimensions.sm,
-            runSpacing: AppDimensions.sm,
-            children: [
-              _ScorePill(
-                label: 'Housekeeping',
-                value: _format(housekeepingAverage),
-              ),
-              _ScorePill(
-                label: 'Maintenance',
-                value: _format(maintenanceAverage),
-              ),
-              _ScorePill(label: 'Security', value: _format(securityAverage)),
-              _ScorePill(label: 'Landscape', value: _format(landscapeAverage)),
-            ],
-          ),
-        ],
+            const SizedBox(height: AppDimensions.sm),
+            Row(
+              children: [
+                Expanded(
+                  child: _ScorePill(
+                    label: '🏠',
+                    value: _format(housekeepingAverage),
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.xs),
+                Expanded(
+                  child: _ScorePill(
+                    label: '🔧',
+                    value: _format(maintenanceAverage),
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.xs),
+                Expanded(
+                  child: _ScorePill(
+                    label: '🛡️',
+                    value: _format(securityAverage),
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.xs),
+                Expanded(
+                  child: _ScorePill(
+                    label: '🌳',
+                    value: _format(landscapeAverage),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -240,20 +309,51 @@ class _ScorePill extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.sm,
+        horizontal: AppDimensions.xs,
         vertical: AppDimensions.xs,
       ),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
-        '$label: $value',
-        style: Theme.of(
-          context,
-        ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+      child: Center(
+        child: Text(
+          '$label $value',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
+        ),
       ),
     );
+  }
+}
+
+class _PinnedTabBarDelegate extends SliverPersistentHeaderDelegate {
+  const _PinnedTabBarDelegate({required this.child});
+
+  final Widget child;
+
+  @override
+  double get minExtent => kTextTabBarHeight;
+
+  @override
+  double get maxExtent => kTextTabBarHeight;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant _PinnedTabBarDelegate oldDelegate) {
+    return oldDelegate.child != child;
   }
 }
 
@@ -269,6 +369,8 @@ class _MissingChecklistView extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.lg),
         child: Text(
           'Checklist data is unavailable for "$projectId". Open this screen from a project details page.',
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyLarge,
         ),
@@ -296,7 +398,7 @@ double _combinedAverage(
 
 String _format(double value) {
   if (value == 0) {
-    return '-';
+    return '—';
   }
 
   return value.toStringAsFixed(1);

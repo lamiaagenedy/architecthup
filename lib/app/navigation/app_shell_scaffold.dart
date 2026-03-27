@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_strings.dart';
 import 'app_bottom_navigation.dart';
 import 'authenticated_shell_header.dart';
+import 'route_names.dart';
 
 class AppShellScaffold extends StatelessWidget {
   const AppShellScaffold({required this.navigationShell, super.key});
@@ -46,13 +47,19 @@ class AppShellScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeTab = _tabs[navigationShell.currentIndex];
+    final routePath = GoRouterState.of(context).uri.path;
+    final isChecklistRoute = routePath.contains(
+      '/${RouteNames.projectChecklistPath}',
+    );
 
     return Scaffold(
-      appBar: AuthenticatedShellHeader(
-        eyebrow: AppStrings.shellHeaderEyebrow,
-        title: activeTab.title,
-        subtitle: activeTab.subtitle,
-      ),
+      appBar: isChecklistRoute
+          ? null
+          : AuthenticatedShellHeader(
+              eyebrow: AppStrings.shellHeaderEyebrow,
+              title: activeTab.title,
+              subtitle: activeTab.subtitle,
+            ),
       body: navigationShell,
       bottomNavigationBar: AppBottomNavigation(
         currentIndex: navigationShell.currentIndex,

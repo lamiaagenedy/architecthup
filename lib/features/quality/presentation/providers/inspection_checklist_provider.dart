@@ -101,7 +101,9 @@ class InspectionChecklistNotifier
   }
 
   double categoryAverage(InspectionCategoryKey category) {
-    return _averageFromEntries(state.entries[category] ?? const []);
+    return _averageFromEntries(
+      state.entries[category] ?? const <InspectionItemState>[],
+    );
   }
 
   double overallAverage() {
@@ -110,7 +112,7 @@ class InspectionChecklistNotifier
   }
 
   InspectionItemState _item(InspectionCategoryKey category, int index) {
-    final items = state.entries[category] ?? const [];
+    final items = state.entries[category] ?? const <InspectionItemState>[];
     return items[index];
   }
 
@@ -120,7 +122,9 @@ class InspectionChecklistNotifier
     InspectionItemState next,
   ) {
     final currentEntries = state.entries;
-    final items = [...(currentEntries[category] ?? const [])];
+    final List<InspectionItemState> items = [
+      ...(currentEntries[category] ?? const <InspectionItemState>[]),
+    ];
     items[index] = next;
 
     state = state.copyWith(entries: {...currentEntries, category: items});
