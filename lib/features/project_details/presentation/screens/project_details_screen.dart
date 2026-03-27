@@ -72,45 +72,141 @@ class ProjectDetailsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppDimensions.lg),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Inspection readiness',
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.sm),
-                  Text(
-                    'Review the quality checklist for this project and save the latest inspection ratings.',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.35,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.md),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () {
-                        context.push(
-                          RouteNames.projectChecklist(project.id),
-                          extra: project,
-                        );
-                      },
-                      icon: const Icon(Icons.checklist_rounded),
-                      label: const Text('Open Checklist'),
-                    ),
-                  ),
-                ],
+          Text(
+            'Actions',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: AppDimensions.md),
+          ProjectActionsGrid(project: project),
+        ],
+      ),
+    );
+  }
+}
+
+class ProjectActionsGrid extends StatelessWidget {
+  const ProjectActionsGrid({required this.project, super.key});
+
+  final ProjectListItem project;
+
+  void _openQualityCheck(BuildContext context) {
+    context.push(RouteNames.projectChecklist(project.id), extra: project);
+  }
+
+  void _showComingSoon(BuildContext context) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Coming Soon')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: ProjectActionCard(
+                icon: '📋',
+                label: 'Quality Check',
+                onTap: () => _openQualityCheck(context),
               ),
             ),
+            const SizedBox(width: AppDimensions.md),
+            Expanded(
+              child: ProjectActionCard(
+                icon: '📸',
+                label: 'Add Photos',
+                onTap: () => _showComingSoon(context),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppDimensions.md),
+        Row(
+          children: [
+            Expanded(
+              child: ProjectActionCard(
+                icon: '📄',
+                label: 'Reports',
+                onTap: () => _showComingSoon(context),
+              ),
+            ),
+            const SizedBox(width: AppDimensions.md),
+            Expanded(
+              child: ProjectActionCard(
+                icon: '💬',
+                label: 'Comments',
+                onTap: () => _showComingSoon(context),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class ProjectActionCard extends StatelessWidget {
+  const ProjectActionCard({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    super.key,
+  });
+
+  final String icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return AspectRatio(
+      aspectRatio: 1.1,
+      child: Material(
+        color: Colors.white,
+        elevation: 2,
+        shadowColor: Colors.black12,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey.shade200),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          splashColor: Theme.of(context).splashColor,
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.md),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  icon,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.headlineSmall?.copyWith(
+                    fontSize: AppDimensions.lg,
+                    height: 1,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.sm),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
