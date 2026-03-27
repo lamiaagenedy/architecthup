@@ -98,29 +98,31 @@ class ProjectActionsGrid extends StatelessWidget {
   void _showComingSoon(BuildContext context) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      const SnackBar(content: Text('Coming Soon')),
-    );
+    messenger.showSnackBar(const SnackBar(content: Text('Coming Soon')));
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         Row(
           children: [
             Expanded(
               child: ProjectActionCard(
-                icon: '📋',
+                icon: Icons.checklist_rounded,
                 label: 'Quality Check',
+                tintColor: colorScheme.primary,
                 onTap: () => _openQualityCheck(context),
               ),
             ),
             const SizedBox(width: AppDimensions.md),
             Expanded(
               child: ProjectActionCard(
-                icon: '📸',
+                icon: Icons.photo_camera_outlined,
                 label: 'Add Photos',
+                tintColor: colorScheme.tertiary,
                 onTap: () => _showComingSoon(context),
               ),
             ),
@@ -131,16 +133,18 @@ class ProjectActionsGrid extends StatelessWidget {
           children: [
             Expanded(
               child: ProjectActionCard(
-                icon: '📄',
+                icon: Icons.description_outlined,
                 label: 'Reports',
+                tintColor: Colors.orange.shade700,
                 onTap: () => _showComingSoon(context),
               ),
             ),
             const SizedBox(width: AppDimensions.md),
             Expanded(
               child: ProjectActionCard(
-                icon: '💬',
+                icon: Icons.chat_bubble_outline_rounded,
                 label: 'Comments',
+                tintColor: colorScheme.secondary,
                 onTap: () => _showComingSoon(context),
               ),
             ),
@@ -155,27 +159,30 @@ class ProjectActionCard extends StatelessWidget {
   const ProjectActionCard({
     required this.icon,
     required this.label,
+    required this.tintColor,
     required this.onTap,
     super.key,
   });
 
-  final String icon;
+  final IconData icon;
   final String label;
+  final Color tintColor;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return AspectRatio(
       aspectRatio: 1.1,
       child: Material(
-        color: Colors.white,
+        color: colorScheme.surface,
         elevation: 2,
         shadowColor: Colors.black12,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.grey.shade200),
+          side: BorderSide(color: tintColor.withValues(alpha: 0.16)),
         ),
         child: InkWell(
           onTap: onTap,
@@ -186,21 +193,24 @@ class ProjectActionCard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  icon,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.headlineSmall?.copyWith(
-                    fontSize: AppDimensions.lg,
-                    height: 1,
+                Container(
+                  width: AppDimensions.xl + AppDimensions.xs,
+                  height: AppDimensions.xl + AppDimensions.xs,
+                  decoration: BoxDecoration(
+                    color: tintColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(AppDimensions.sm + 2),
                   ),
+                  child: Icon(icon, color: tintColor, size: AppDimensions.md),
                 ),
                 const SizedBox(height: AppDimensions.sm),
                 Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: textTheme.bodyMedium,
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
