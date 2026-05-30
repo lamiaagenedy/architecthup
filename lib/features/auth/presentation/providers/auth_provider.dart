@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/di/app_providers.dart';
+import '../../../../core/network/access_token_provider.dart';
 import '../../../../core/exceptions/app_exception.dart';
 import '../../../../core/logger/app_logger.dart';
 import '../../domain/entities/auth_session.dart';
@@ -14,6 +15,7 @@ import '../../domain/usecases/logout_usecase.dart';
 final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
   (ref) {
     return AuthController(
+      ref: ref,
       getAuthSession: ref.watch(getAuthSessionUsecaseProvider),
       loadCurrentUser: ref.watch(loadCurrentUserUsecaseProvider),
       loginUsecase: ref.watch(loginUsecaseProvider),
@@ -24,15 +26,19 @@ final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
 
 class AuthController extends StateNotifier<AuthState> {
   AuthController({
+    required Ref ref,
     required GetAuthSessionUsecase getAuthSession,
     required LoadCurrentUserUsecase loadCurrentUser,
     required LoginUsecase loginUsecase,
     required LogoutUsecase logoutUsecase,
-  }) : _getAuthSession = getAuthSession,
+  }) : _ref = ref,
+       _getAuthSession = getAuthSession,
        _loadCurrentUser = loadCurrentUser,
        _loginUsecase = loginUsecase,
        _logoutUsecase = logoutUsecase,
        super(const AuthState.initial());
+
+  final Ref _ref;
 
   final GetAuthSessionUsecase _getAuthSession;
   final LoadCurrentUserUsecase _loadCurrentUser;
@@ -59,6 +65,7 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       final session = await _getAuthSession();
       if (session == null) {
+        _ref.read(accessTokenProvider.notifier).state = null;
         state = state.copyWith(
           status: AuthStatus.unauthenticated,
           session: null,
@@ -69,6 +76,7 @@ class AuthController extends StateNotifier<AuthState> {
       }
 
       final user = await _loadCurrentUser() ?? session.user;
+      _ref.read(accessTokenProvider.notifier).state = session.accessToken;
       state = state.copyWith(
         status: AuthStatus.authenticated,
         session: session.copyWith(user: user),
@@ -105,6 +113,7 @@ class AuthController extends StateNotifier<AuthState> {
         password: password,
         rememberMe: rememberMe,
       );
+      _ref.read(accessTokenProvider.notifier).state = session.accessToken;
       state = state.copyWith(
         status: AuthStatus.authenticated,
         session: session,
@@ -140,6 +149,7 @@ class AuthController extends StateNotifier<AuthState> {
       AppLogger.error('Logout failed', error: error, stackTrace: stackTrace);
     }
 
+    _ref.read(accessTokenProvider.notifier).state = null;
     state = const AuthState.unauthenticated();
   }
 

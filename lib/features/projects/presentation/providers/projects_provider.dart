@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../app/di/app_providers.dart';
 import '../../data/datasources/projects_mock_datasource.dart';
+import '../../data/datasources/projects_remote_datasource.dart';
 import '../../data/repositories/projects_repository_impl.dart';
+import '../../data/repositories/projects_remote_repository_impl.dart';
 import '../../domain/entities/project_list_item.dart';
 import '../../domain/repositories/projects_repository.dart';
 
@@ -9,9 +12,19 @@ final projectsMockDatasourceProvider = Provider<ProjectsMockDatasource>(
   (ref) => ProjectsMockDatasource(),
 );
 
-final projectsRepositoryProvider = Provider<ProjectsRepository>(
-  (ref) => ProjectsRepositoryImpl(ref.watch(projectsMockDatasourceProvider)),
+final projectsRemoteDatasourceProvider = Provider<ProjectsRemoteDatasource>(
+  (ref) => ProjectsRemoteDatasource(ref.watch(dioClientProvider)),
 );
+
+final projectsRepositoryProvider = Provider<ProjectsRepository>((ref) {
+  final config = ref.watch(appConfigProvider);
+  if (config.useMockData) {
+    return ProjectsRepositoryImpl(ref.watch(projectsMockDatasourceProvider));
+  }
+  return ProjectsRemoteRepositoryImpl(
+    ref.watch(projectsRemoteDatasourceProvider),
+  );
+});
 
 final projectsQueryProvider = StateProvider<String>((ref) => '');
 

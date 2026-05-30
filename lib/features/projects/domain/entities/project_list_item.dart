@@ -9,6 +9,10 @@ class ProjectListItem {
     required this.budgetLabel,
     required this.updatedLabel,
     required this.nextMilestone,
+    this.supervisorName,
+    this.companyName,
+    this.grade,
+    this.uId,
   });
 
   final String id;
@@ -20,6 +24,10 @@ class ProjectListItem {
   final String budgetLabel;
   final String updatedLabel;
   final String nextMilestone;
+  final String? supervisorName;
+  final String? companyName;
+  final String? grade;
+  final String? uId;
 }
 
 enum ProjectStatus {

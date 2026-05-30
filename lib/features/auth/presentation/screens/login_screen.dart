@@ -17,8 +17,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'user@example.com');
-  final _passwordController = TextEditingController(text: 'securePassword123');
+  final _emailController = TextEditingController(text: 'manager@aces.com');
+  final _passwordController = TextEditingController(text: 'manager123');
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
 
@@ -157,7 +157,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   const SizedBox(height: AppDimensions.lg),
                                   AuthNoticeBanner(
                                     message:
-                                        '${AppStrings.loginHelperTitle}: ${AppStrings.loginMockCredentials}',
+                                        'Manager: manager@aces.com / manager123',
                                     icon: Icons.info_outline_rounded,
                                     backgroundColor: colorScheme
                                         .primaryContainer

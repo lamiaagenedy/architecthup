@@ -7,6 +7,7 @@ class AppConfig {
     required this.enableHttpLogs,
     required this.enableVerboseLogs,
     required this.useMockAuth,
+    required this.useMockData,
   });
 
   final AppEnvironment environment;
@@ -14,8 +15,9 @@ class AppConfig {
   final bool enableHttpLogs;
   final bool enableVerboseLogs;
   final bool useMockAuth;
+  final bool useMockData;
 
-  static const String appName = 'ArchitectHub';
+  static const String appName = 'ACES';
 
   bool get isProduction => environment == AppEnvironment.production;
   bool get isDevelopment => environment == AppEnvironment.development;
@@ -30,7 +32,7 @@ class AppConfig {
     );
     const apiBaseUrl = String.fromEnvironment(
       'API_BASE_URL',
-      defaultValue: 'https://api.architecthub.local',
+      defaultValue: 'http://localhost:3000',
     );
     const enableHttpLogs = bool.fromEnvironment(
       'ENABLE_HTTP_LOGS',
@@ -42,7 +44,11 @@ class AppConfig {
     );
     const useMockAuth = bool.fromEnvironment(
       'USE_MOCK_AUTH',
-      defaultValue: true,
+      defaultValue: false,
+    );
+    const useMockData = bool.fromEnvironment(
+      'USE_MOCK_DATA',
+      defaultValue: false,
     );
 
     return AppConfig(
@@ -51,6 +57,7 @@ class AppConfig {
       enableHttpLogs: enableHttpLogs,
       enableVerboseLogs: enableVerboseLogs,
       useMockAuth: useMockAuth,
+      useMockData: useMockData,
     );
   }
 }

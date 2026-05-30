@@ -91,8 +91,12 @@ class ProjectActionsGrid extends StatelessWidget {
 
   final ProjectListItem project;
 
-  void _openQualityCheck(BuildContext context) {
-    context.push(RouteNames.projectChecklist(project.id), extra: project);
+  void _openServices(BuildContext context) {
+    context.push(RouteNames.projectServices(project.id), extra: project);
+  }
+
+  void _openStats(BuildContext context) {
+    context.push('${RouteNames.projectDetails(project.id)}/stats', extra: project);
   }
 
   void _showComingSoon(BuildContext context) {
@@ -112,18 +116,18 @@ class ProjectActionsGrid extends StatelessWidget {
             Expanded(
               child: ProjectActionCard(
                 icon: Icons.checklist_rounded,
-                label: 'Quality Check',
+                label: 'Inspection',
                 tintColor: colorScheme.primary,
-                onTap: () => _openQualityCheck(context),
+                onTap: () => _openServices(context),
               ),
             ),
             const SizedBox(width: AppDimensions.md),
             Expanded(
               child: ProjectActionCard(
-                icon: Icons.photo_camera_outlined,
-                label: 'Add Photos',
+                icon: Icons.analytics_outlined,
+                label: 'Stats',
                 tintColor: colorScheme.tertiary,
-                onTap: () => _showComingSoon(context),
+                onTap: () => _openStats(context),
               ),
             ),
           ],

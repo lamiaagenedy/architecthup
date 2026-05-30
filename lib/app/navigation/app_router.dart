@@ -4,12 +4,18 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/manager/presentation/screens/manager_dashboard_screen.dart';
+import '../../features/manager/presentation/screens/manager_projects_screen.dart';
+import '../../features/manager/presentation/screens/manager_report_screen.dart';
+import '../../features/manager/presentation/screens/manager_users_screen.dart';
 import '../../features/maps/presentation/screens/map_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/project_details/presentation/screens/project_details_screen.dart';
-import '../../features/projects/presentation/screens/projects_list_screen.dart';
 import '../../features/projects/domain/entities/project_list_item.dart';
-import '../../features/quality/presentation/screens/quality_checklist_screen.dart';
+import '../../features/projects/presentation/screens/projects_list_screen.dart';
+import '../../features/quality/presentation/screens/aces_checklist_screen.dart';
+import '../../features/quality/presentation/screens/services_list_screen.dart';
+import '../../features/quality/presentation/screens/stats_screen.dart';
 import '../../features/splash/presentation/providers/splash_flow_provider.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/tasks/presentation/screens/tasks_list_screen.dart';
@@ -17,6 +23,12 @@ import 'app_shell_scaffold.dart';
 import 'navigation_observer.dart';
 import 'route_names.dart';
 import 'router_refresh_notifier.dart';
+
+bool _isManager(AuthState authState) =>
+    authState.session?.user.role?.toLowerCase() == 'manager';
+
+String _homeRouteForRole(AuthState authState) =>
+    _isManager(authState) ? RouteNames.managerDashboard : RouteNames.projects;
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = RouterRefreshNotifier(
@@ -43,6 +55,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final location = state.matchedLocation;
       final isAtSplash = location == RouteNames.splash;
       final isAtLogin = location == RouteNames.login;
+      final isManagerRoute = location.startsWith('/manager');
 
       if (!splashState.isComplete || authState.isChecking) {
         return isAtSplash ? null : RouteNames.splash;
@@ -53,7 +66,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       if (isAtSplash || isAtLogin) {
-        return RouteNames.dashboard;
+        return _homeRouteForRole(authState);
+      }
+
+      if (_isManager(authState) && !isManagerRoute) {
+        if (location == RouteNames.dashboard ||
+            location == RouteNames.projects) {
+          return RouteNames.managerDashboard;
+        }
+      }
+
+      if (!_isManager(authState) && isManagerRoute) {
+        return RouteNames.projects;
       }
 
       return null;
@@ -68,6 +92,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.login,
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.managerDashboard,
+        builder: (context, state) => const ManagerDashboardScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.managerUsers,
+        builder: (context, state) => const ManagerUsersScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.managerProjects,
+        builder: (context, state) => const ManagerProjectsScreen(),
+        routes: [
+          GoRoute(
+            path: '${RouteNames.managerReportPath}/report',
+            builder: (context, state) {
+              final projectId = state.pathParameters['projectId'] ?? '';
+              return ManagerReportScreen(projectId: projectId);
+            },
+          ),
+        ],
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -98,29 +143,49 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       final extraProject = state.extra;
                       if (extraProject is! ProjectListItem) {
                         final projectId = state.pathParameters['projectId'];
-
                         return ProjectDetailsScreen.missing(
                           projectId: projectId ?? '',
                         );
                       }
-
                       return ProjectDetailsScreen(project: extraProject);
                     },
                     routes: [
                       GoRoute(
-                        path: RouteNames.projectChecklistPath,
-                        name: 'project-checklist',
+                        path: RouteNames.projectServicesPath,
                         builder: (context, state) {
                           final extraProject = state.extra;
                           if (extraProject is! ProjectListItem) {
-                            final projectId = state.pathParameters['projectId'];
-
-                            return QualityChecklistScreen.missing(
-                              projectId: projectId ?? '',
+                            return ProjectDetailsScreen.missing(
+                              projectId: state.pathParameters['projectId'] ?? '',
                             );
                           }
-
-                          return QualityChecklistScreen(project: extraProject);
+                          return ServicesListScreen(project: extraProject);
+                        },
+                        routes: [
+                          GoRoute(
+                            path: RouteNames.serviceChecklistPath,
+                            builder: (context, state) {
+                              final extraProject = state.extra;
+                              final serviceId =
+                                  state.pathParameters['serviceId'] ?? '';
+                              if (extraProject is! ProjectListItem) {
+                                return ProjectDetailsScreen.missing(
+                                  projectId: state.pathParameters['projectId'] ?? '',
+                                );
+                              }
+                              return AcesChecklistScreen(
+                                project: extraProject,
+                                serviceId: serviceId,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      GoRoute(
+                        path: 'stats',
+                        builder: (context, state) {
+                          final projectId = state.pathParameters['projectId'] ?? '';
+                          return StatsScreen(projectId: projectId);
                         },
                       ),
                     ],

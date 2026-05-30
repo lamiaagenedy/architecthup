@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 
 import '../../app/bootstrap/app_bootstrap.dart';
 import '../../core/config/app_config.dart';
+import '../../core/network/access_token_provider.dart';
 import '../../core/network/dio_client.dart';
 import '../../core/network/network_info.dart';
 import '../../features/auth/data/datasources/local/auth_local_datasource.dart';
@@ -39,9 +40,18 @@ final preferencesStoreProvider = Provider<PreferencesStore>(
   (ref) => PreferencesStore(ref.watch(preferencesBoxProvider)),
 );
 
-final dioClientProvider = Provider<DioClient>(
-  (ref) => DioClient(config: ref.watch(appConfigProvider)),
-);
+final dioClientProvider = Provider<DioClient>((ref) {
+  return DioClient(
+    config: ref.watch(appConfigProvider),
+    readAccessToken: () {
+      final inMemory = ref.read(accessTokenProvider);
+      if (inMemory != null && inMemory.isNotEmpty) {
+        return inMemory;
+      }
+      return ref.read(authLocalDatasourceProvider).readAccessToken();
+    },
+  );
+});
 
 final networkInfoProvider = Provider<NetworkInfo>((ref) => const NetworkInfo());
 
