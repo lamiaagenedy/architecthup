@@ -26,7 +26,19 @@ class AuthLocalDatasource {
       return null;
     }
 
-    return AuthSession.fromJson(Map<String, dynamic>.from(rawValue));
+    Map<String, dynamic> deepConvert(Map map) {
+      return map.map((key, value) {
+        if (value is Map) return MapEntry(key.toString(), deepConvert(value));
+        return MapEntry(key.toString(), value);
+      });
+    }
+
+    try {
+      return AuthSession.fromJson(deepConvert(rawValue));
+    } catch (_) {
+      _box.delete(sessionKey);
+      return null;
+    }
   }
 
   String? readAccessToken() => readSession()?.accessToken;

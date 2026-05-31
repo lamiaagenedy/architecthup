@@ -19,12 +19,13 @@ class NetworkAuthRemoteDatasource implements AuthRemoteDatasource {
     required bool rememberMe,
   }) async {
     try {
-      final response = await _dioClient.dio.post<Map<String, dynamic>>(
+      final response = await _dioClient.dio.post<dynamic>(
         '/auth/login',
         data: <String, dynamic>{'email': email, 'password': password},
       );
 
-      return _mapSession(response, rememberMe);
+      final body = Map<String, dynamic>.from(response.data as Map);
+      return _mapSession(body, rememberMe);
     } on DioException catch (error) {
       throw _mapError(error);
     }
@@ -44,27 +45,27 @@ class NetworkAuthRemoteDatasource implements AuthRemoteDatasource {
   }
 
   AuthSession _mapSession(
-    Response<Map<String, dynamic>> response,
+    Map<String, dynamic> body,
     bool rememberMe,
   ) {
-    final body = response.data ?? <String, dynamic>{};
-    final data = body['data'] is Map<String, dynamic>
-        ? Map<String, dynamic>.from(body['data'] as Map)
+    final rawData = body['data'];
+    final data = rawData is Map
+        ? Map<String, dynamic>.from(rawData)
         : body;
 
     final now = DateTime.now();
-    final userJson = Map<String, dynamic>.from(
-      data['user'] as Map? ??
-          <String, dynamic>{
+    final rawUser = data['user'];
+    final userJson = rawUser is Map
+        ? Map<String, dynamic>.from(rawUser)
+        : <String, dynamic>{
             'id': 'unknown',
             'email': '',
             'name': '',
             'createdAt': now.toIso8601String(),
-          },
-    );
+          };
 
     final role = userJson['role'] as String? ?? 'user';
-    final tokenExpiry = role == 'manager'
+    final tokenExpiry = role.toLowerCase() == 'manager'
         ? now.add(const Duration(hours: 8))
         : now.add(const Duration(days: 30));
 
@@ -80,12 +81,12 @@ class NetworkAuthRemoteDatasource implements AuthRemoteDatasource {
 
   AppException _mapError(DioException error) {
     final data = error.response?.data;
-    if (data is Map<String, dynamic>) {
+    if (data is Map) {
+      final mapped = Map<String, dynamic>.from(data);
       return NetworkException(
-        data['message'] as String? ?? 'Network request failed',
+        mapped['message'] as String? ?? 'Network request failed',
       );
     }
-
     return NetworkException(error.message ?? 'Network request failed');
   }
 }
