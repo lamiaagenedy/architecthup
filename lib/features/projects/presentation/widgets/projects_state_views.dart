@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_dimensions.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/theme/app_text_styles.dart';
 
 class ProjectsLoadingView extends StatelessWidget {
   const ProjectsLoadingView({super.key});
@@ -15,8 +17,8 @@ class ProjectsLoadingView extends StatelessWidget {
           child: Container(
             height: 180,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(24),
+              color: AppColors.divider,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             ),
           ),
         ),
@@ -40,15 +42,13 @@ class ProjectsErrorView extends StatelessWidget {
           children: [
             Text(
               'Unable to load projects',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: AppTextStyles.sectionTitle,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.sm),
             Text(
               'Try again to refresh the latest project list.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              style: AppTextStyles.secondary,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.lg),
@@ -73,15 +73,13 @@ class ProjectsEmptyView extends StatelessWidget {
           children: [
             Text(
               'No projects match this view',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: AppTextStyles.sectionTitle,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.sm),
             Text(
               'Adjust your search or filters to see more active work.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              style: AppTextStyles.secondary,
               textAlign: TextAlign.center,
             ),
           ],

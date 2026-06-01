@@ -2,7 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_dimensions.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_grade_badge.dart';
+import '../../../../core/widgets/app_icon_container.dart';
 import '../../../../core/constants/dashboard_strings.dart';
 import '../providers/dashboard_operations_provider.dart';
 import 'dashboard_section_header.dart';
@@ -19,17 +24,7 @@ class DashboardCategorySummarySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.md),
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
+    return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -83,134 +78,58 @@ class _CategoryPerformanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final toneColor = _scoreToneColor(context, item.score);
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final toneColor = _scoreToneColor(item.score);
 
-    return Material(
-      color: colorScheme.surface,
-      borderRadius: BorderRadius.circular(24),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: onTap,
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [colorScheme.surface, toneColor.withValues(alpha: 0.06)],
-            ),
-            border: Border.all(color: toneColor.withValues(alpha: 0.18)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.035),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
+    return AppCard(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppIconContainer(icon: item.category.icon, color: toneColor),
+              const Spacer(),
+              AppGradeBadge(label: '${item.score}', score: item.score),
             ],
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: toneColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(
-                        item.category.icon,
-                        color: toneColor,
-                        size: 20,
-                      ),
-                    ),
-                    const Spacer(),
-                    _ScoreBadge(score: item.score, toneColor: toneColor),
-                  ],
-                ),
-                const SizedBox(height: AppDimensions.md),
-                Text(
-                  item.category.label,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    height: 1.15,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.sm),
-                Text(
-                  DashboardStrings.categoryScoreHelper,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.md),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: (item.score.clamp(0, 100)) / 100,
-                    minHeight: 8,
-                    backgroundColor: toneColor.withValues(alpha: 0.14),
-                    valueColor: AlwaysStoppedAnimation<Color>(toneColor),
-                  ),
-                ),
-              ],
+          const SizedBox(height: AppDimensions.md),
+          Text(
+            item.category.label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.cardTitle,
+          ),
+          const SizedBox(height: AppDimensions.sm),
+          Text(
+            DashboardStrings.categoryScoreHelper,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.secondary,
+          ),
+          const SizedBox(height: AppDimensions.md),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: (item.score.clamp(0, 100)) / 100,
+              minHeight: 8,
+              backgroundColor: AppColors.divider,
+              color: toneColor,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _ScoreBadge extends StatelessWidget {
-  const _ScoreBadge({required this.score, required this.toneColor});
-
-  final int score;
-  final Color toneColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.sm,
-        vertical: AppDimensions.xs,
-      ),
-      decoration: BoxDecoration(
-        color: toneColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        '$score',
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: toneColor,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-}
-
-Color _scoreToneColor(BuildContext context, int score) {
-  final colorScheme = Theme.of(context).colorScheme;
-
+Color _scoreToneColor(int score) {
   if (score >= 90) {
-    return colorScheme.secondary;
+    return AppColors.success;
   }
   if (score >= 75) {
-    return const Color(0xFFF59E0B);
+    return AppColors.warning;
   }
 
-  return colorScheme.error;
+  return AppColors.danger;
 }

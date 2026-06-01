@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../constants/app_colors.dart';
-import '../constants/app_dimensions.dart';
+import 'app_colors.dart';
+import 'app_dimensions.dart';
+import 'app_text_styles.dart';
 import 'design_tokens.dart';
 
 abstract final class AppTheme {
@@ -10,7 +11,6 @@ abstract final class AppTheme {
     final scheme = ColorScheme.fromSeed(
       seedColor: DesignTokens.seedColor,
       primary: AppColors.primary,
-      secondary: AppColors.secondary,
       brightness: Brightness.light,
     );
     final baseTextTheme = Typography.material2021().black;
@@ -18,46 +18,39 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: AppColors.surface,
+      scaffoldBackgroundColor: AppColors.background,
       textTheme: baseTextTheme.copyWith(
-        headlineMedium: baseTextTheme.headlineMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-        ),
-        headlineSmall: baseTextTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w700,
-        ),
-        titleLarge: baseTextTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
-        bodyLarge: baseTextTheme.bodyLarge?.copyWith(height: 1.45),
-        bodyMedium: baseTextTheme.bodyMedium?.copyWith(height: 1.4),
+        headlineLarge: AppTextStyles.pageTitle,
+        headlineMedium: AppTextStyles.sectionTitle,
+        titleMedium: AppTextStyles.cardTitle,
+        bodyLarge: AppTextStyles.body,
+        bodyMedium: AppTextStyles.body,
+        bodySmall: AppTextStyles.secondary,
+        labelSmall: AppTextStyles.caption,
       ),
       appBarTheme: AppBarTheme(
         elevation: 0,
         centerTitle: false,
         backgroundColor: Colors.transparent,
-        foregroundColor: scheme.onSurface,
+        foregroundColor: AppColors.textPrimary,
         toolbarHeight: DesignTokens.appBarHeight,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        titleTextStyle: baseTextTheme.titleLarge?.copyWith(
-          color: scheme.onSurface,
-          fontWeight: FontWeight.w700,
-        ),
+        titleTextStyle: AppTextStyles.sectionTitle,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.cardBackground,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.md,
           vertical: AppDimensions.md,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: const BorderSide(color: AppColors.divider),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: const BorderSide(color: AppColors.divider),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
@@ -74,25 +67,25 @@ abstract final class AppTheme {
       ),
       cardTheme: CardThemeData(
         elevation: 0,
-        color: Colors.white,
+        color: AppColors.cardBackground,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-          side: const BorderSide(color: AppColors.border),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size.fromHeight(AppDimensions.buttonHeight),
+          backgroundColor: AppColors.primary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(DesignTokens.buttonRadius),
           ),
-          textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          textStyle: AppTextStyles.buttonText,
         ),
       ),
       checkboxTheme: CheckboxThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        side: const BorderSide(color: AppColors.border),
+        side: const BorderSide(color: AppColors.divider),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
@@ -101,7 +94,7 @@ abstract final class AppTheme {
         ),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(color: scheme.primary),
-      dividerColor: AppColors.border,
+      dividerColor: AppColors.divider,
     );
   }
 }

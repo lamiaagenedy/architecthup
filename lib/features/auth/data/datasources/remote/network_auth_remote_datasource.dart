@@ -44,14 +44,9 @@ class NetworkAuthRemoteDatasource implements AuthRemoteDatasource {
     throw NetworkException('Token refresh is not supported');
   }
 
-  AuthSession _mapSession(
-    Map<String, dynamic> body,
-    bool rememberMe,
-  ) {
+  AuthSession _mapSession(Map<String, dynamic> body, bool rememberMe) {
     final rawData = body['data'];
-    final data = rawData is Map
-        ? Map<String, dynamic>.from(rawData)
-        : body;
+    final data = rawData is Map ? Map<String, dynamic>.from(rawData) : body;
 
     final now = DateTime.now();
     final rawUser = data['user'];
@@ -64,8 +59,9 @@ class NetworkAuthRemoteDatasource implements AuthRemoteDatasource {
             'createdAt': now.toIso8601String(),
           };
 
-    final role = userJson['role'] as String? ?? 'user';
-    final tokenExpiry = role.toLowerCase() == 'manager'
+    final role = _normalizeRole(userJson['role'] as String?);
+    userJson['role'] = role;
+    final tokenExpiry = role == 'Manager'
         ? now.add(const Duration(hours: 8))
         : now.add(const Duration(days: 30));
 
@@ -88,5 +84,13 @@ class NetworkAuthRemoteDatasource implements AuthRemoteDatasource {
       );
     }
     return NetworkException(error.message ?? 'Network request failed');
+  }
+
+  String _normalizeRole(String? rawRole) {
+    final normalized = rawRole?.trim().toLowerCase();
+    if (normalized == 'manager') {
+      return 'Manager';
+    }
+    return 'Engineer';
   }
 }

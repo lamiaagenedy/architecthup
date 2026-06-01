@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/theme/design_tokens.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_grade_badge.dart';
 import '../../domain/entities/project_list_item.dart';
-import 'project_status_badge.dart';
 
 class ProjectListItemCard extends StatelessWidget {
   const ProjectListItemCard({
@@ -17,94 +19,50 @@ class ProjectListItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final progressPercent = (project.progress * 100).round();
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: DesignTokens.shortAnimation,
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.all(AppDimensions.md),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.54),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.02),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      project.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        height: 1.12,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.sm),
-                  ProjectStatusBadge(status: project.status),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.sm),
-              Row(
-                children: [
-                  Icon(
-                    Icons.place_outlined,
-                    size: 16,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: AppDimensions.xs),
-                  Expanded(
-                    child: Text(
-                      project.location,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        height: 1.35,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.lg),
-              _ProjectProgressBlock(
-                progress: project.progress,
-                progressPercent: progressPercent,
-              ),
-              const SizedBox(height: AppDimensions.md),
-              Text(
-                'Updated ${project.updatedLabel}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.4,
+    return AppCard(
+      onTap: onTap,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  project.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.cardTitle.copyWith(fontSize: 17),
                 ),
+                const SizedBox(height: AppDimensions.xs),
+                Text(
+                  project.companyName ?? project.location,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.secondary,
+                ),
+                const SizedBox(height: AppDimensions.sm),
+                _ProjectProgressBlock(
+                  progress: project.progress,
+                  progressPercent: progressPercent,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppDimensions.sm),
+          Column(
+            children: [
+              _ProgressCircle(progress: project.progress),
+              const SizedBox(height: AppDimensions.sm),
+              AppGradeBadge(
+                label: project.grade ?? '—',
+                score: progressPercent,
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -121,24 +79,17 @@ class _ProjectProgressBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final progressColor = _progressColor(context, progressPercent);
+    final progressColor = _progressColor(progressPercent);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '$progressPercent%',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        Text('$progressPercent%', style: AppTextStyles.cardTitle),
         const SizedBox(height: AppDimensions.sm),
         Container(
           height: 10,
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.72),
+            color: AppColors.divider,
             borderRadius: BorderRadius.circular(999),
           ),
           child: Align(
@@ -159,15 +110,45 @@ class _ProjectProgressBlock extends StatelessWidget {
   }
 }
 
-Color _progressColor(BuildContext context, int progressPercent) {
-  final colorScheme = Theme.of(context).colorScheme;
-
+Color _progressColor(int progressPercent) {
   if (progressPercent >= 90) {
-    return colorScheme.secondary;
+    return AppColors.success;
   }
   if (progressPercent >= 65) {
-    return colorScheme.primary;
+    return AppColors.primary;
   }
 
-  return Colors.orange.shade700;
+  return AppColors.warning;
+}
+
+class _ProgressCircle extends StatelessWidget {
+  const _ProgressCircle({required this.progress});
+
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CircularProgressIndicator(
+            value: progress.clamp(0.0, 1.0),
+            strokeWidth: 4,
+            backgroundColor: AppColors.divider,
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+          ),
+          Text(
+            '${(progress * 100).round()}%',
+            style: AppTextStyles.caption.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

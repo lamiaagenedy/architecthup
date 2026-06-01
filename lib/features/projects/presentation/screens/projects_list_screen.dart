@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/navigation/route_names.dart';
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/theme/design_tokens.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/project_list_item.dart';
 import '../providers/projects_provider.dart';
 import '../widgets/project_list_item_card.dart';
@@ -32,6 +34,7 @@ class _ProjectsListScreenState extends ConsumerState<ProjectsListScreen> {
     final filteredProjectsAsync = ref.watch(filteredProjectsProvider);
     final selectedStatus = ref.watch(projectsStatusFilterProvider);
     final totalProjectsCount = projectsAsync.valueOrNull?.length ?? 0;
+    final currentUser = ref.watch(currentUserProvider);
 
     return filteredProjectsAsync.when(
       data: (projects) {
@@ -41,6 +44,7 @@ class _ProjectsListScreenState extends ConsumerState<ProjectsListScreen> {
             totalProjectsCount: totalProjectsCount,
             searchController: _searchController,
             selectedStatus: selectedStatus,
+            userName: currentUser?.name ?? 'Supervisor',
             onSearchChanged: _handleSearchChanged,
             onStatusSelected: _handleStatusSelected,
             onRefresh: _refreshProjects,
@@ -53,6 +57,7 @@ class _ProjectsListScreenState extends ConsumerState<ProjectsListScreen> {
           totalProjectsCount: totalProjectsCount,
           searchController: _searchController,
           selectedStatus: selectedStatus,
+          userName: currentUser?.name ?? 'Supervisor',
           onSearchChanged: _handleSearchChanged,
           onStatusSelected: _handleStatusSelected,
           onRefresh: _refreshProjects,
@@ -81,6 +86,7 @@ class _ProjectsListScreenState extends ConsumerState<ProjectsListScreen> {
         totalProjectsCount: totalProjectsCount,
         searchController: _searchController,
         selectedStatus: selectedStatus,
+        userName: currentUser?.name ?? 'Supervisor',
         onSearchChanged: _handleSearchChanged,
         onStatusSelected: _handleStatusSelected,
         onRefresh: _refreshProjects,
@@ -91,6 +97,7 @@ class _ProjectsListScreenState extends ConsumerState<ProjectsListScreen> {
         totalProjectsCount: totalProjectsCount,
         searchController: _searchController,
         selectedStatus: selectedStatus,
+        userName: currentUser?.name ?? 'Supervisor',
         onSearchChanged: _handleSearchChanged,
         onStatusSelected: _handleStatusSelected,
         onRefresh: _refreshProjects,
@@ -119,6 +126,7 @@ class _ProjectsScaffold extends StatelessWidget {
     required this.totalProjectsCount,
     required this.searchController,
     required this.selectedStatus,
+    required this.userName,
     required this.onSearchChanged,
     required this.onStatusSelected,
     required this.onRefresh,
@@ -129,6 +137,7 @@ class _ProjectsScaffold extends StatelessWidget {
   final int totalProjectsCount;
   final TextEditingController searchController;
   final ProjectStatus? selectedStatus;
+  final String userName;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<ProjectStatus?> onStatusSelected;
   final Future<void> Function() onRefresh;
@@ -141,12 +150,13 @@ class _ProjectsScaffold extends StatelessWidget {
       child: RefreshIndicator(
         onRefresh: onRefresh,
         child: ListView(
-          padding: DesignTokens.pagePadding,
+          padding: AppDimensions.screenPadding,
           children: [
             _ProjectsHeader(
               visibleProjectsCount: visibleProjectsCount,
               totalProjectsCount: totalProjectsCount,
               selectedStatus: selectedStatus,
+              userName: userName,
             ),
             const SizedBox(height: AppDimensions.lg),
             _ProjectsSearchField(
@@ -192,55 +202,24 @@ class _ProjectsHeader extends StatelessWidget {
     required this.visibleProjectsCount,
     required this.totalProjectsCount,
     required this.selectedStatus,
+    required this.userName,
   });
 
   final int visibleProjectsCount;
   final int totalProjectsCount;
   final ProjectStatus? selectedStatus;
+  final String userName;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final filterLabel = selectedStatus?.label ?? 'All statuses';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 30,
-          height: 3,
-          decoration: BoxDecoration(
-            color: colorScheme.primary.withValues(alpha: 0.92),
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
+        Text('Hello, $userName', style: AppTextStyles.pageTitle),
         const SizedBox(height: AppDimensions.sm),
-        Text(
-          'PROJECT PORTFOLIO',
-          style: textTheme.labelSmall?.copyWith(
-            color: colorScheme.primary.withValues(alpha: 0.9),
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.sm),
-        Text(
-          'Projects',
-          style: textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: colorScheme.onSurface,
-            height: 1.05,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.sm),
-        Text(
-          'Scan delivery health, compare progress, and jump into the right project faster.',
-          style: textTheme.bodyLarge?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-            height: 1.45,
-          ),
-        ),
+        Text('Assigned Projects', style: AppTextStyles.sectionTitle),
         const SizedBox(height: AppDimensions.md),
         Wrap(
           spacing: AppDimensions.sm,
@@ -266,32 +245,24 @@ class _ProjectsStatPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.md,
         vertical: AppDimensions.sm,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
+        color: AppColors.divider,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
-        ),
       ),
       child: RichText(
         text: TextSpan(
-          style: textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
+          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
           children: [
             TextSpan(text: '$label  '),
             TextSpan(
               text: value,
-              style: textTheme.labelLarge?.copyWith(
-                color: colorScheme.onSurface,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -313,26 +284,21 @@ class _ProjectsSearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
     return TextField(
       controller: controller,
       textInputAction: TextInputAction.search,
       onChanged: onChanged,
       decoration: InputDecoration(
         hintText: 'Search by project name or location',
-        hintStyle: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        ),
+        hintStyle: AppTextStyles.secondary,
         prefixIcon: Padding(
           padding: const EdgeInsetsDirectional.only(
             start: AppDimensions.sm,
             end: AppDimensions.xs,
           ),
           child: Icon(
-            Icons.search_rounded,
-            color: colorScheme.onSurfaceVariant,
+            Icons.search_outlined,
+            color: AppColors.textSecondary,
             size: 22,
           ),
         ),
@@ -341,26 +307,10 @@ class _ProjectsSearchField extends StatelessWidget {
           minHeight: 48,
         ),
         filled: true,
-        fillColor: colorScheme.surface,
+        fillColor: AppColors.cardBackground,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.md,
           vertical: AppDimensions.md,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: colorScheme.primary, width: 1.4),
         ),
       ),
     );
@@ -380,71 +330,28 @@ class _StatusFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return AnimatedContainer(
-      duration: DesignTokens.shortAnimation,
-      curve: Curves.easeOutCubic,
+    return Container(
       decoration: BoxDecoration(
         color: isSelected
-            ? colorScheme.primary.withValues(alpha: 0.14)
-            : colorScheme.surface,
+            ? AppColors.primary.withValues(alpha: 0.12)
+            : AppColors.cardBackground,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: isSelected
-              ? colorScheme.primary.withValues(alpha: 0.12)
-              : colorScheme.outlineVariant.withValues(alpha: 0.55),
-        ),
-        boxShadow: isSelected
-            ? [
-                BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.08),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(999),
           onTap: onTap,
-          child: AnimatedPadding(
-            duration: DesignTokens.shortAnimation,
-            curve: Curves.easeOutCubic,
+          child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: isSelected ? AppDimensions.md : 14,
               vertical: AppDimensions.sm,
             ),
-            child: Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedContainer(
-                    duration: DesignTokens.shortAnimation,
-                    curve: Curves.easeOutCubic,
-                    width: isSelected ? 8 : 0,
-                    height: 8,
-                    margin: EdgeInsets.only(right: isSelected ? 8 : 0),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                  Text(
-                    label,
-                    style: textTheme.labelLarge?.copyWith(
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant,
-                      fontWeight: isSelected
-                          ? FontWeight.w800
-                          : FontWeight.w600,
-                    ),
-                  ),
-                ],
+            child: Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
               ),
             ),
           ),

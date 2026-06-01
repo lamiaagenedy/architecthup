@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/theme/design_tokens.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_card.dart';
 import '../../../projects/domain/entities/project_list_item.dart';
 import '../constants/quality_checklist_items.dart';
 import '../providers/inspection_checklist_provider.dart';
@@ -69,11 +71,15 @@ class _QualityChecklistScreenState extends ConsumerState<QualityChecklistScreen>
       top: false,
       child: Scaffold(
         appBar: AppBar(
-          centerTitle: true,
-          title: const Text(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          title: Text(
             'Quality Checklist',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.sectionTitle,
           ),
         ),
         body: CustomScrollView(
@@ -109,10 +115,17 @@ class _QualityChecklistScreenState extends ConsumerState<QualityChecklistScreen>
               pinned: true,
               delegate: _PinnedTabBarDelegate(
                 child: Material(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: AppColors.background,
                   child: TabBar(
                     controller: _tabController,
                     isScrollable: true,
+                    labelColor: AppColors.primary,
+                    unselectedLabelColor: AppColors.textSecondary,
+                    indicatorColor: AppColors.primary,
+                    labelStyle: AppTextStyles.caption.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                    unselectedLabelStyle: AppTextStyles.caption,
                     tabs: const [
                       Tab(
                         child: Text(
@@ -165,12 +178,13 @@ class _QualityChecklistScreenState extends ConsumerState<QualityChecklistScreen>
           top: false,
           child: Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: AppColors.cardBackground,
+              border: Border(top: BorderSide(color: AppColors.divider)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, -4),
                 ),
               ],
             ),
@@ -181,7 +195,7 @@ class _QualityChecklistScreenState extends ConsumerState<QualityChecklistScreen>
               AppDimensions.sm,
             ),
             child: SizedBox(
-              height: 44,
+              height: 48,
               width: double.infinity,
               child: FilledButton(
                 onPressed: () {
@@ -218,80 +232,67 @@ class _InspectionSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Card(
-      elevation: 1,
+    return AppCard(
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-        side: BorderSide(color: colorScheme.outlineVariant),
-      ),
-      child: Padding(
-        padding: AppDimensions.cardPadding,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    projectName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.sm),
-                Text(
-                  'Overall ${_format(overallAverage)}',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  projectName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.primary,
-                  ),
+                  style: AppTextStyles.cardTitle,
                 ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.sm),
-            Row(
-              children: [
-                Expanded(
-                  child: _ScorePill(
-                    label: '🏠',
-                    value: _format(housekeepingAverage),
-                  ),
+              ),
+              const SizedBox(width: AppDimensions.sm),
+              Text(
+                'Overall ${_format(overallAverage)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.caption.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
                 ),
-                const SizedBox(width: AppDimensions.xs),
-                Expanded(
-                  child: _ScorePill(
-                    label: '🔧',
-                    value: _format(maintenanceAverage),
-                  ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.sm),
+          Row(
+            children: [
+              Expanded(
+                child: _ScorePill(
+                  label: '🏠',
+                  value: _format(housekeepingAverage),
                 ),
-                const SizedBox(width: AppDimensions.xs),
-                Expanded(
-                  child: _ScorePill(
-                    label: '🛡️',
-                    value: _format(securityAverage),
-                  ),
+              ),
+              const SizedBox(width: AppDimensions.xs),
+              Expanded(
+                child: _ScorePill(
+                  label: '🔧',
+                  value: _format(maintenanceAverage),
                 ),
-                const SizedBox(width: AppDimensions.xs),
-                Expanded(
-                  child: _ScorePill(
-                    label: '🌳',
-                    value: _format(landscapeAverage),
-                  ),
+              ),
+              const SizedBox(width: AppDimensions.xs),
+              Expanded(
+                child: _ScorePill(
+                  label: '🛡️',
+                  value: _format(securityAverage),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              const SizedBox(width: AppDimensions.xs),
+              Expanded(
+                child: _ScorePill(
+                  label: '🌳',
+                  value: _format(landscapeAverage),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -305,15 +306,13 @@ class _ScorePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.xs,
         vertical: AppDimensions.xs,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+        color: AppColors.divider,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Center(
@@ -321,10 +320,7 @@ class _ScorePill extends StatelessWidget {
           '$label $value',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-          ),
+          style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700),
         ),
       ),
     );
@@ -372,7 +368,7 @@ class _MissingChecklistView extends StatelessWidget {
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge,
+          style: AppTextStyles.secondary,
         ),
       ),
     );

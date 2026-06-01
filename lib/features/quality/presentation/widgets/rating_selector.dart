@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_dimensions.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/theme/app_text_styles.dart';
 
 class RatingSelector extends StatelessWidget {
   const RatingSelector({
@@ -18,17 +20,10 @@ class RatingSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
+        Text(label, style: AppTextStyles.cardTitle),
         const SizedBox(height: AppDimensions.sm),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -40,14 +35,17 @@ class RatingSelector extends StatelessWidget {
                     child: ChoiceChip(
                       label: Text('$score'),
                       selected: value == score,
-                      selectedColor: colorScheme.primary,
-                      labelStyle: Theme.of(context).textTheme.labelLarge
-                          ?.copyWith(
-                            color: value == score
-                                ? colorScheme.onPrimary
-                                : colorScheme.onSurface,
-                            fontWeight: FontWeight.w700,
-                          ),
+                      selectedColor: AppColors.primary,
+                      backgroundColor: AppColors.cardBackground,
+                      shape: const StadiumBorder(
+                        side: BorderSide(color: AppColors.divider),
+                      ),
+                      labelStyle: AppTextStyles.caption.copyWith(
+                        color: value == score
+                            ? Colors.white
+                            : AppColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
                       onSelected: (_) {
                         final nextValue = value == score ? null : score;
                         onChanged(nextValue);

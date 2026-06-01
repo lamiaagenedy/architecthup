@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants/app_dimensions.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_dimensions.dart';
+import '../../core/theme/app_text_styles.dart';
 
 class AppBottomNavigation extends StatelessWidget {
   const AppBottomNavigation({
@@ -16,28 +18,18 @@ class AppBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return DecoratedBox(
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -8),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, -2),
           ),
         ],
       ),
       child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          border: Border(
-            top: BorderSide(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-            ),
-          ),
-        ),
+        decoration: BoxDecoration(color: AppColors.cardBackground),
         child: SafeArea(
           top: false,
           child: Padding(
@@ -90,27 +82,18 @@ class _NavigationItemButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final selectedColor = colorScheme.primary;
-    final unselectedColor = colorScheme.onSurfaceVariant;
+    final selectedColor = AppColors.primary;
+    final unselectedColor = AppColors.textSecondary;
 
     return Semantics(
       button: true,
       selected: isSelected,
       label: item.label,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? selectedColor.withValues(alpha: 0.12)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(22),
-        ),
+      child: Container(
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(18),
             onTap: onTap,
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -120,73 +103,24 @@ class _NavigationItemButton extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    width: isSelected ? 42 : 34,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? selectedColor.withValues(alpha: 0.14)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween<double>(
-                        begin: isSelected ? 0.92 : 1,
-                        end: isSelected ? 1.08 : 1,
-                      ),
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, scale, child) {
-                        return Transform.scale(scale: scale, child: child);
-                      },
-                      child: Icon(
-                        item.icon,
-                        size: 22,
+                  Icon(
+                    item.icon,
+                    size: 22,
+                    color: isSelected ? selectedColor : unselectedColor,
+                  ),
+                  const SizedBox(height: 6),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      item.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.caption.copyWith(
                         color: isSelected ? selectedColor : unselectedColor,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w600,
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    style:
-                        Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: isSelected ? selectedColor : unselectedColor,
-                          fontWeight: isSelected
-                              ? FontWeight.w800
-                              : FontWeight.w600,
-                          letterSpacing: 0.1,
-                        ) ??
-                        TextStyle(
-                          color: isSelected ? selectedColor : unselectedColor,
-                        ),
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 180),
-                      opacity: isSelected ? 1 : 0.78,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          item.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    width: isSelected ? 18 : 6,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? selectedColor
-                          : selectedColor.withValues(alpha: 0),
-                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                 ],

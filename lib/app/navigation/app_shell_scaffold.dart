@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../core/constants/app_strings.dart';
 import 'app_bottom_navigation.dart';
-import 'authenticated_shell_header.dart';
-import 'route_names.dart';
 
 class AppShellScaffold extends StatelessWidget {
   const AppShellScaffold({required this.navigationShell, super.key});
@@ -16,50 +13,37 @@ class AppShellScaffold extends StatelessWidget {
       label: AppStrings.tabDashboard,
       title: AppStrings.tabDashboard,
       subtitle: AppStrings.shellHeaderDashboardSubtitle,
-      icon: Icons.space_dashboard_rounded,
+      icon: Icons.space_dashboard_outlined,
     ),
     _ShellTab(
       label: AppStrings.tabProjects,
       title: AppStrings.tabProjects,
       subtitle: AppStrings.shellHeaderProjectsSubtitle,
-      icon: Icons.apartment_rounded,
+      icon: Icons.apartment_outlined,
     ),
     _ShellTab(
       label: AppStrings.tabTasks,
       title: AppStrings.tabTasks,
       subtitle: AppStrings.shellHeaderTasksSubtitle,
-      icon: Icons.task_alt_rounded,
+      icon: Icons.task_alt_outlined,
     ),
     _ShellTab(
       label: AppStrings.tabMap,
       title: AppStrings.tabMap,
       subtitle: AppStrings.shellHeaderMapSubtitle,
-      icon: Icons.map_rounded,
+      icon: Icons.map_outlined,
     ),
     _ShellTab(
       label: AppStrings.tabProfile,
       title: AppStrings.tabProfile,
       subtitle: AppStrings.shellHeaderProfileSubtitle,
-      icon: Icons.person_rounded,
+      icon: Icons.person_outline,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final activeTab = _tabs[navigationShell.currentIndex];
-    final routePath = GoRouterState.of(context).uri.path;
-    final isChecklistRoute = routePath.contains(
-      '/${RouteNames.projectChecklistPath}',
-    );
-
     return Scaffold(
-      appBar: isChecklistRoute
-          ? null
-          : AuthenticatedShellHeader(
-              eyebrow: AppStrings.shellHeaderEyebrow,
-              title: activeTab.title,
-              subtitle: activeTab.subtitle,
-            ),
       body: navigationShell,
       bottomNavigationBar: AppBottomNavigation(
         currentIndex: navigationShell.currentIndex,

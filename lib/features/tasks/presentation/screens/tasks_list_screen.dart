@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/theme/design_tokens.dart';
+import '../../../../app/navigation/route_names.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_card.dart';
 
 class TasksListScreen extends StatefulWidget {
   const TasksListScreen({super.key});
@@ -20,24 +24,22 @@ class _TasksListScreenState extends State<TasksListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tasks')),
-      body: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(
-          AppDimensions.lg,
-          AppDimensions.md,
-          AppDimensions.lg,
-          AppDimensions.xl,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          color: AppColors.primary,
+          onPressed: () => context.go(RouteNames.dashboard),
         ),
+        title: const Text('Tasks'),
+      ),
+      body: ListView.separated(
+        padding: AppDimensions.screenPadding,
         itemCount: _tasks.length,
         separatorBuilder: (_, _) => const SizedBox(height: AppDimensions.sm),
         itemBuilder: (context, index) {
           final task = _tasks[index];
 
-          return Card(
-            margin: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(DesignTokens.cardRadius),
-            ),
+          return AppCard(
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.md,
@@ -53,7 +55,7 @@ class _TasksListScreenState extends State<TasksListScreen> {
               ),
               title: Text(
                 task.title,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                style: AppTextStyles.body.copyWith(
                   decoration: task.isDone ? TextDecoration.lineThrough : null,
                 ),
               ),
@@ -73,6 +75,7 @@ class _TasksListScreenState extends State<TasksListScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add_rounded),
       ),
     );

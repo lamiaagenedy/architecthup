@@ -25,7 +25,7 @@ import 'route_names.dart';
 import 'router_refresh_notifier.dart';
 
 bool _isManager(AuthState authState) =>
-    authState.session?.user.role?.toLowerCase() == 'manager';
+    authState.session?.user.role == 'Manager';
 
 String _homeRouteForRole(AuthState authState) =>
     _isManager(authState) ? RouteNames.managerDashboard : RouteNames.projects;
@@ -156,7 +156,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                           final extraProject = state.extra;
                           if (extraProject is! ProjectListItem) {
                             return ProjectDetailsScreen.missing(
-                              projectId: state.pathParameters['projectId'] ?? '',
+                              projectId:
+                                  state.pathParameters['projectId'] ?? '',
                             );
                           }
                           return ServicesListScreen(project: extraProject);
@@ -170,7 +171,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                                   state.pathParameters['serviceId'] ?? '';
                               if (extraProject is! ProjectListItem) {
                                 return ProjectDetailsScreen.missing(
-                                  projectId: state.pathParameters['projectId'] ?? '',
+                                  projectId:
+                                      state.pathParameters['projectId'] ?? '',
                                 );
                               }
                               return AcesChecklistScreen(
@@ -184,7 +186,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       GoRoute(
                         path: 'stats',
                         builder: (context, state) {
-                          final projectId = state.pathParameters['projectId'] ?? '';
+                          final projectId =
+                              state.pathParameters['projectId'] ?? '';
                           return StatsScreen(projectId: projectId);
                         },
                       ),

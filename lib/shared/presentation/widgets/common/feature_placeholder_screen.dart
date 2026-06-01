@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_dimensions.dart';
-import '../../../../core/theme/design_tokens.dart';
+import '../../../../app/navigation/route_names.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_card.dart';
 
 class FeaturePlaceholderScreen extends StatelessWidget {
   const FeaturePlaceholderScreen({
@@ -15,30 +19,29 @@ class FeaturePlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: DesignTokens.pageMaxWidth,
-          ),
-          child: Padding(
-            padding: DesignTokens.pagePadding,
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.lg),
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          color: AppColors.primary,
+          onPressed: () => context.go(RouteNames.dashboard),
+        ),
+        title: Text(title),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: AppDimensions.screenPadding,
+              child: AppCard(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
+                    Text(title, style: AppTextStyles.sectionTitle),
                     const SizedBox(height: AppDimensions.md),
-                    Text(
-                      description,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
+                    Text(description, style: AppTextStyles.body),
                   ],
                 ),
               ),

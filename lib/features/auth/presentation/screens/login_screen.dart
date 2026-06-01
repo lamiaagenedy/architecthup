@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_dimensions.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/theme/design_tokens.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_card.dart';
+import '../../../../shared/presentation/widgets/common/app_logo.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/auth_notice_banner.dart';
 
@@ -51,287 +53,183 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.16),
-              AppColors.surface,
-              Colors.white,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Stack(
-                children: [
-                  Positioned(
-                    top: -60,
-                    right: -20,
-                    child: _BackgroundAccent(
-                      size: 180,
-                      color: colorScheme.primary.withValues(alpha: 0.08),
-                    ),
-                  ),
-                  Positioned(
-                    top: 120,
-                    left: -36,
-                    child: _BackgroundAccent(
-                      size: 120,
-                      color: colorScheme.secondary.withValues(alpha: 0.08),
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.lg,
-                      vertical: AppDimensions.xl,
-                    ),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight:
-                            constraints.maxHeight - (AppDimensions.xl * 2),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: AppDimensions.screenPadding,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: AppCard(
+                padding: AppDimensions.cardPadding,
+                child: Form(
+                  key: _formKey,
+                  autovalidateMode: _showValidation
+                      ? AutovalidateMode.onUserInteraction
+                      : AutovalidateMode.disabled,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _AuthBrandHeader(),
+                      const SizedBox(height: AppDimensions.spacingSection),
+                      Text(
+                        AppStrings.loginTitle,
+                        style: AppTextStyles.pageTitle,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const _AuthBrandHeader(),
-                          const SizedBox(height: AppDimensions.xl),
-                          Container(
-                            width: double.infinity,
-                            padding: DesignTokens.cardPadding,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.96),
-                              borderRadius: BorderRadius.circular(
-                                DesignTokens.screenRadius,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colorScheme.shadow.withValues(
-                                    alpha: 0.08,
-                                  ),
-                                  blurRadius: 36,
-                                  offset: const Offset(0, 18),
+                      const SizedBox(height: AppDimensions.sm),
+                      Text(
+                        AppStrings.loginSubtitle,
+                        style: AppTextStyles.secondary,
+                      ),
+                      const SizedBox(height: AppDimensions.spacingCard),
+                      AuthNoticeBanner(
+                        message: 'Manager: manager@aces.com / manager123',
+                        icon: Icons.info_outline,
+                        backgroundColor: AppColors.primary.withValues(
+                          alpha: 0.12,
+                        ),
+                        foregroundColor: AppColors.textPrimary,
+                      ),
+                      const SizedBox(height: AppDimensions.spacingCard),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 280),
+                        child: authState.errorMessage == null
+                            ? const SizedBox.shrink()
+                            : Padding(
+                                key: ValueKey(authState.errorMessage),
+                                padding: const EdgeInsets.only(
+                                  bottom: AppDimensions.md,
                                 ),
-                              ],
-                            ),
-                            child: Form(
-                              key: _formKey,
-                              autovalidateMode: _showValidation
-                                  ? AutovalidateMode.onUserInteraction
-                                  : AutovalidateMode.disabled,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    AppStrings.loginEyebrow,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge
-                                        ?.copyWith(
-                                          color: colorScheme.primary,
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                child: AuthNoticeBanner(
+                                  message: authState.errorMessage!,
+                                  icon: Icons.error_outline,
+                                  backgroundColor: AppColors.danger.withValues(
+                                    alpha: 0.12,
                                   ),
-                                  const SizedBox(height: AppDimensions.sm),
-                                  Text(
-                                    AppStrings.loginTitle,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall
-                                        ?.copyWith(letterSpacing: -0.4),
-                                  ),
-                                  const SizedBox(height: AppDimensions.sm),
-                                  Text(
-                                    AppStrings.loginSubtitle,
-                                    style: Theme.of(context).textTheme.bodyLarge
-                                        ?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
-                                        ),
-                                  ),
-                                  const SizedBox(height: AppDimensions.lg),
-                                  AuthNoticeBanner(
-                                    message:
-                                        'Manager: manager@aces.com / manager123',
-                                    icon: Icons.info_outline_rounded,
-                                    backgroundColor: colorScheme
-                                        .primaryContainer
-                                        .withValues(alpha: 0.45),
-                                    foregroundColor:
-                                        colorScheme.onPrimaryContainer,
-                                  ),
-                                  const SizedBox(height: AppDimensions.lg),
-                                  AnimatedSwitcher(
-                                    duration: DesignTokens.mediumAnimation,
-                                    child: authState.errorMessage == null
-                                        ? const SizedBox.shrink()
-                                        : Padding(
-                                            key: ValueKey(
-                                              authState.errorMessage,
-                                            ),
-                                            padding: const EdgeInsets.only(
-                                              bottom: AppDimensions.md,
-                                            ),
-                                            child: AuthNoticeBanner(
-                                              message: authState.errorMessage!,
-                                              icon: Icons.error_outline_rounded,
-                                              backgroundColor: colorScheme
-                                                  .errorContainer
-                                                  .withValues(alpha: 0.7),
-                                              foregroundColor:
-                                                  colorScheme.onErrorContainer,
-                                            ),
-                                          ),
-                                  ),
-                                  TextFormField(
-                                    controller: _emailController,
-                                    focusNode: _emailFocusNode,
-                                    keyboardType: TextInputType.emailAddress,
-                                    textInputAction: TextInputAction.next,
-                                    autofillHints: const [
-                                      AutofillHints.username,
-                                    ],
-                                    decoration: const InputDecoration(
-                                      labelText: AppStrings.loginEmailLabel,
-                                      hintText: 'name@company.com',
-                                      prefixIcon: Icon(
-                                        Icons.alternate_email_rounded,
-                                      ),
-                                    ),
-                                    validator: _validateEmail,
-                                    onChanged: (_) => _clearAuthError(),
-                                    onFieldSubmitted: (_) {
-                                      _passwordFocusNode.requestFocus();
-                                    },
-                                  ),
-                                  const SizedBox(height: AppDimensions.md),
-                                  TextFormField(
-                                    controller: _passwordController,
-                                    focusNode: _passwordFocusNode,
-                                    obscureText: _obscurePassword,
-                                    textInputAction: TextInputAction.done,
-                                    autofillHints: const [
-                                      AutofillHints.password,
-                                    ],
-                                    decoration: InputDecoration(
-                                      labelText: AppStrings.loginPasswordLabel,
-                                      prefixIcon: const Icon(
-                                        Icons.lock_outline_rounded,
-                                      ),
-                                      suffixIcon: IconButton(
-                                        onPressed: authState.isSubmitting
-                                            ? null
-                                            : () {
-                                                setState(() {
-                                                  _obscurePassword =
-                                                      !_obscurePassword;
-                                                });
-                                              },
-                                        icon: Icon(
-                                          _obscurePassword
-                                              ? Icons.visibility_outlined
-                                              : Icons.visibility_off_outlined,
-                                        ),
-                                        tooltip: _obscurePassword
-                                            ? 'Show password'
-                                            : 'Hide password',
-                                      ),
-                                    ),
-                                    validator: _validatePassword,
-                                    onChanged: (_) => _clearAuthError(),
-                                    onFieldSubmitted: (_) => _submit(),
-                                  ),
-                                  const SizedBox(height: AppDimensions.md),
-                                  InkWell(
-                                    borderRadius: BorderRadius.circular(
-                                      DesignTokens.buttonRadius,
-                                    ),
-                                    onTap: authState.isSubmitting
-                                        ? null
-                                        : () {
-                                            setState(() {
-                                              _rememberMe = !_rememberMe;
-                                            });
-                                          },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: AppDimensions.sm,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Checkbox(
-                                            value: _rememberMe,
-                                            onChanged: authState.isSubmitting
-                                                ? null
-                                                : (value) {
-                                                    setState(() {
-                                                      _rememberMe =
-                                                          value ?? false;
-                                                    });
-                                                  },
-                                          ),
-                                          const SizedBox(
-                                            width: AppDimensions.xs,
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              AppStrings.loginRememberMe,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: AppDimensions.lg),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: FilledButton(
-                                      onPressed:
-                                          authState.isSubmitting ||
-                                              !_isFormValid
-                                          ? null
-                                          : _submit,
-                                      child: AnimatedSwitcher(
-                                        duration: DesignTokens.shortAnimation,
-                                        child: authState.isSubmitting
-                                            ? const _SubmittingContent()
-                                            : const Text(
-                                                AppStrings.loginPrimaryAction,
-                                                key: ValueKey('idle'),
-                                              ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: AppDimensions.md),
-                                  Text(
-                                    AppStrings.loginHelperBody,
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
-                                        ),
-                                  ),
-                                ],
+                                  foregroundColor: AppColors.danger,
+                                ),
                               ),
-                            ),
-                          ),
-                        ],
                       ),
-                    ),
+                      TextFormField(
+                        controller: _emailController,
+                        focusNode: _emailFocusNode,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        autofillHints: const [AutofillHints.username],
+                        decoration: const InputDecoration(
+                          labelText: AppStrings.loginEmailLabel,
+                          hintText: 'name@company.com',
+                          prefixIcon: Icon(Icons.alternate_email_outlined),
+                        ),
+                        validator: _validateEmail,
+                        onChanged: (_) => _clearAuthError(),
+                        onFieldSubmitted: (_) {
+                          _passwordFocusNode.requestFocus();
+                        },
+                      ),
+                      const SizedBox(height: AppDimensions.md),
+                      TextFormField(
+                        controller: _passwordController,
+                        focusNode: _passwordFocusNode,
+                        obscureText: _obscurePassword,
+                        textInputAction: TextInputAction.done,
+                        autofillHints: const [AutofillHints.password],
+                        decoration: InputDecoration(
+                          labelText: AppStrings.loginPasswordLabel,
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            onPressed: authState.isSubmitting
+                                ? null
+                                : () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                            ),
+                            tooltip: _obscurePassword
+                                ? 'Show password'
+                                : 'Hide password',
+                          ),
+                        ),
+                        validator: _validatePassword,
+                        onChanged: (_) => _clearAuthError(),
+                        onFieldSubmitted: (_) => _submit(),
+                      ),
+                      const SizedBox(height: AppDimensions.md),
+                      InkWell(
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusButton,
+                        ),
+                        onTap: authState.isSubmitting
+                            ? null
+                            : () {
+                                setState(() {
+                                  _rememberMe = !_rememberMe;
+                                });
+                              },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppDimensions.sm,
+                          ),
+                          child: Row(
+                            children: [
+                              Checkbox(
+                                value: _rememberMe,
+                                onChanged: authState.isSubmitting
+                                    ? null
+                                    : (value) {
+                                        setState(() {
+                                          _rememberMe = value ?? false;
+                                        });
+                                      },
+                              ),
+                              const SizedBox(width: AppDimensions.xs),
+                              Expanded(
+                                child: Text(
+                                  AppStrings.loginRememberMe,
+                                  style: AppTextStyles.body.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingSection),
+                      SizedBox(
+                        width: double.infinity,
+                        height: AppDimensions.buttonHeight,
+                        child: FilledButton(
+                          onPressed: authState.isSubmitting || !_isFormValid
+                              ? null
+                              : _submit,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 180),
+                            child: authState.isSubmitting
+                                ? const _SubmittingContent()
+                                : const Text(
+                                    AppStrings.loginPrimaryAction,
+                                    key: ValueKey('idle'),
+                                  ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.md),
+                      Text(
+                        AppStrings.loginHelperBody,
+                        style: AppTextStyles.caption,
+                      ),
+                    ],
                   ),
-                ],
-              );
-            },
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -405,41 +303,14 @@ class _AuthBrandHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: colorScheme.primary,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Icon(
-            Icons.domain_verification_rounded,
-            color: Colors.white,
-            size: 28,
-          ),
-        ),
-        const SizedBox(width: AppDimensions.md),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppStrings.appName,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: AppDimensions.xs),
-            Text(
-              'Field-first construction operations',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
+        const AppLogo(size: 48, borderRadius: 16),
+        const SizedBox(height: AppDimensions.sm),
+        Text(
+          AppStrings.appName,
+          style: AppTextStyles.pageTitle.copyWith(color: AppColors.primary),
         ),
       ],
     );
@@ -463,24 +334,6 @@ class _SubmittingContent extends StatelessWidget {
         SizedBox(width: AppDimensions.sm),
         Text(AppStrings.loginSubmitting),
       ],
-    );
-  }
-}
-
-class _BackgroundAccent extends StatelessWidget {
-  const _BackgroundAccent({required this.size, required this.color});
-
-  final double size;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      ),
     );
   }
 }

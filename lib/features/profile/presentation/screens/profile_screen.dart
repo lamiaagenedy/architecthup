@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_dimensions.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/theme/design_tokens.dart';
+import '../../../../app/navigation/route_names.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_card.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -11,99 +15,79 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final authState = ref.watch(authControllerProvider);
     final user = ref.watch(currentUserProvider);
 
-    return SafeArea(
-      top: false,
-      child: ListView(
-        padding: DesignTokens.pagePadding,
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          color: AppColors.primary,
+          onPressed: () => context.go(RouteNames.dashboard),
+        ),
+        title: const Text('Profile'),
+      ),
+      body: ListView(
+        padding: AppDimensions.screenPadding,
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppStrings.profileAccountSection,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.md),
-                  _ProfileInfoRow(
-                    label: AppStrings.profileNameLabel,
-                    value: user?.name ?? '-',
-                  ),
-                  const SizedBox(height: AppDimensions.sm),
-                  _ProfileInfoRow(
-                    label: AppStrings.profileRoleLabel,
-                    value: user?.role ?? AppStrings.defaultUserRole,
-                  ),
-                  const SizedBox(height: AppDimensions.sm),
-                  _ProfileInfoRow(
-                    label: AppStrings.profileEmailLabel,
-                    value: user?.email ?? '-',
-                  ),
-                ],
-              ),
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.profileAccountSection,
+                  style: AppTextStyles.sectionTitle,
+                ),
+                const SizedBox(height: AppDimensions.md),
+                _ProfileInfoRow(
+                  label: AppStrings.profileNameLabel,
+                  value: user?.name ?? '-',
+                ),
+                const SizedBox(height: AppDimensions.sm),
+                _ProfileInfoRow(
+                  label: AppStrings.profileRoleLabel,
+                  value: user?.role ?? AppStrings.defaultUserRole,
+                ),
+                const SizedBox(height: AppDimensions.sm),
+                _ProfileInfoRow(
+                  label: AppStrings.profileEmailLabel,
+                  value: user?.email ?? '-',
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: AppDimensions.md),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppStrings.profileWorkspaceSection,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.md),
-                  _ProfileInfoRow(
-                    label: AppStrings.profileSiteAccessLabel,
-                    value: AppStrings.tabDashboard,
-                  ),
-                  const SizedBox(height: AppDimensions.sm),
-                  _ProfileInfoRow(
-                    label: AppStrings.profileNotificationsLabel,
-                    value: AppStrings.profileNotificationsValue,
-                  ),
-                ],
-              ),
+          const SizedBox(height: AppDimensions.spacingCard),
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.profileWorkspaceSection,
+                  style: AppTextStyles.sectionTitle,
+                ),
+                const SizedBox(height: AppDimensions.md),
+                _ProfileInfoRow(
+                  label: AppStrings.profileSiteAccessLabel,
+                  value: AppStrings.tabDashboard,
+                ),
+                const SizedBox(height: AppDimensions.sm),
+                _ProfileInfoRow(
+                  label: AppStrings.profileNotificationsLabel,
+                  value: AppStrings.profileNotificationsValue,
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: AppDimensions.xl),
-          Divider(color: colorScheme.outlineVariant),
-          const SizedBox(height: AppDimensions.sm),
-          TextButton.icon(
+          const SizedBox(height: AppDimensions.spacingSection),
+          FilledButton.icon(
             onPressed: authState.isSubmitting
                 ? null
                 : () => _confirmLogout(context, ref),
-            icon: Icon(Icons.logout_rounded, color: colorScheme.error),
-            label: Text(
-              AppStrings.profileLogoutLabel,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: textTheme.titleMedium?.copyWith(
-                color: colorScheme.error,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            style: TextButton.styleFrom(
-              alignment: Alignment.centerLeft,
-              minimumSize: const Size.fromHeight(48),
-              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.xs),
+            icon: const Icon(Icons.logout_rounded),
+            label: const Text(AppStrings.profileLogoutLabel),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.danger,
+              minimumSize: const Size.fromHeight(AppDimensions.buttonHeight),
             ),
           ),
         ],
@@ -164,8 +148,6 @@ class _ProfileInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -174,9 +156,7 @@ class _ProfileInfoRow extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: AppTextStyles.caption,
           ),
         ),
         const SizedBox(width: AppDimensions.md),
@@ -186,9 +166,7 @@ class _ProfileInfoRow extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.right,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
           ),
         ),
       ],

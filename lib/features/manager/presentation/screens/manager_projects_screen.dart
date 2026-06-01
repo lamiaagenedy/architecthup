@@ -3,7 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/navigation/route_names.dart';
-import '../../../../core/constants/app_dimensions.dart';
+import '../../../../app/di/app_providers.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_grade_badge.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/manager_provider.dart';
 
 class ManagerProjectsScreen extends ConsumerStatefulWidget {
@@ -21,40 +27,88 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
     final usersAsync = ref.watch(managerUsersProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('All Projects')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          color: AppColors.primary,
+          onPressed: () => context.go(RouteNames.managerDashboard),
+        ),
+        title: const Text('Projects'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => _confirmLogout(context),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCreateDialog(usersAsync.valueOrNull ?? []),
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add),
       ),
       body: projectsAsync.when(
         data: (projects) => ListView.separated(
-          padding: const EdgeInsets.all(AppDimensions.lg),
+          padding: AppDimensions.screenPadding,
           itemCount: projects.length,
-          separatorBuilder: (_, __) => const Divider(),
+          separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.sm),
           itemBuilder: (context, index) {
             final project = projects[index];
-            return ListTile(
-              title: Text(project['name'] as String? ?? ''),
-              subtitle: Text(
-                '${project['company_name']} • ${project['supervisor_name']} • ${project['progress']}% • ${project['grade']}',
-              ),
-              onTap: () => context.push(
-                RouteNames.managerReport('${project['p_id']}'),
-              ),
-              trailing: Wrap(
-                spacing: 4,
+            final progress = (project['progress'] as num?) ?? 0;
+            final grade = project['grade']?.toString() ?? '—';
+
+            return AppCard(
+              onTap: () =>
+                  context.push(RouteNames.managerReport('${project['p_id']}')),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.swap_horiz),
-                    onPressed: () => _reassign(project, usersAsync.valueOrNull ?? []),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          project['name'] as String? ?? '',
+                          style: AppTextStyles.cardTitle,
+                        ),
+                      ),
+                      AppGradeBadge(label: grade, score: progress),
+                    ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: () => _flagReinspection('${project['p_id']}'),
+                  const SizedBox(height: AppDimensions.xs),
+                  Text(
+                    project['company_name'] as String? ?? '',
+                    style: AppTextStyles.secondary,
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () => _deleteProject('${project['p_id']}'),
+                  const SizedBox(height: AppDimensions.sm),
+                  LinearProgressIndicator(
+                    value: (progress / 100).clamp(0.0, 1.0),
+                    minHeight: 8,
+                    backgroundColor: AppColors.divider,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(height: AppDimensions.sm),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${project['supervisor_name'] ?? ''}',
+                          style: AppTextStyles.caption,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.swap_horiz),
+                        onPressed: () =>
+                            _reassign(project, usersAsync.valueOrNull ?? []),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () =>
+                            _flagReinspection('${project['p_id']}'),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => _deleteProject('${project['p_id']}'),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -65,6 +119,33 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
         error: (error, _) => Center(child: Text(error.toString())),
       ),
     );
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    await ref.read(authControllerProvider.notifier).logout();
+    await ref.read(authLocalDatasourceProvider).clearSession();
+    if (!context.mounted) return;
+    context.go(RouteNames.login);
   }
 
   Future<void> _deleteProject(String projectId) async {
@@ -99,10 +180,12 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
 
     if (selected == null) return;
 
-    await ref.read(managerRemoteDatasourceProvider).assignProject(
-      projectId: project['p_id'] as int,
-      supervisorId: selected,
-    );
+    await ref
+        .read(managerRemoteDatasourceProvider)
+        .assignProject(
+          projectId: project['p_id'] as int,
+          supervisorId: selected,
+        );
     ref.invalidate(managerProjectsApiProvider);
   }
 
@@ -120,9 +203,18 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name')),
-              TextField(controller: locationController, decoration: const InputDecoration(labelText: 'Location')),
-              TextField(controller: companyController, decoration: const InputDecoration(labelText: 'Company')),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              TextField(
+                controller: locationController,
+                decoration: const InputDecoration(labelText: 'Location'),
+              ),
+              TextField(
+                controller: companyController,
+                decoration: const InputDecoration(labelText: 'Company'),
+              ),
               DropdownButtonFormField<int>(
                 value: supervisorId,
                 items: users
@@ -140,20 +232,28 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Create')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Create'),
+          ),
         ],
       ),
     );
 
     if (confirmed != true || supervisorId == null || !mounted) return;
 
-    await ref.read(managerRemoteDatasourceProvider).createProject(
-      name: nameController.text.trim(),
-      location: locationController.text.trim(),
-      companyName: companyController.text.trim(),
-      supervisorId: supervisorId!,
-    );
+    await ref
+        .read(managerRemoteDatasourceProvider)
+        .createProject(
+          name: nameController.text.trim(),
+          location: locationController.text.trim(),
+          companyName: companyController.text.trim(),
+          supervisorId: supervisorId!,
+        );
     ref.invalidate(managerProjectsApiProvider);
   }
 }
