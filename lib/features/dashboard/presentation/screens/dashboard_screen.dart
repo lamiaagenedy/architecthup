@@ -67,10 +67,22 @@ class DashboardScreen extends ConsumerWidget {
       },
       loading: DashboardLoadingView.new,
       error: (error, stackTrace) => DashboardErrorView(
-        onRetry: () => ref.refresh(dashboardSnapshotProvider),
+        onRetry: () {
+          ref.refresh(projectsListProvider);
+          ref.refresh(dashboardSnapshotProvider);
+        },
+        message: _resolveErrorMessage(error),
       ),
     );
   }
+}
+
+String _resolveErrorMessage(Object error) {
+  final message = error.toString().trim();
+  if (message.isEmpty) {
+    return 'Something went wrong while loading your dashboard.';
+  }
+  return message;
 }
 
 class _DashboardOperationsContent extends StatelessWidget {
@@ -187,49 +199,64 @@ class _InspectionPerformanceSection extends StatelessWidget {
           subtitle: DashboardStrings.sectionInspectionSubtitle,
         ),
         const SizedBox(height: AppDimensions.lg),
-        IntrinsicHeight(
-          child: Row(
-            children: [
-              Expanded(
-                child: _HighestRatedProjectCard(
-                  project: viewModel.highestRatedProject,
-                  onOpenProjects: onOpenProjects,
-                  onOpenProjectChecklist: onOpenProjectChecklist,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.md),
-              Expanded(
-                child: _LowestRatedProjectCard(
-                  project: viewModel.lowestRatedProject,
-                  onOpenProjects: onOpenProjects,
-                  onOpenProjectChecklist: onOpenProjectChecklist,
-                ),
-              ),
-            ],
+        _ResponsiveMetricRow(
+          leading: _HighestRatedProjectCard(
+            project: viewModel.highestRatedProject,
+            onOpenProjects: onOpenProjects,
+            onOpenProjectChecklist: onOpenProjectChecklist,
+          ),
+          trailing: _LowestRatedProjectCard(
+            project: viewModel.lowestRatedProject,
+            onOpenProjects: onOpenProjects,
+            onOpenProjectChecklist: onOpenProjectChecklist,
           ),
         ),
         const SizedBox(height: AppDimensions.md),
-        IntrinsicHeight(
-          child: Row(
-            children: [
-              Expanded(
-                child: _InspectionsTodayCard(
-                  inspectedToday: viewModel.inspectedToday,
-                  totalProjects: viewModel.totalProjects,
-                  onTap: onOpenProjects,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.md),
-              Expanded(
-                child: _OverallAverageScoreCard(
-                  score: viewModel.overallAverageScore,
-                  onTap: onOpenProjects,
-                ),
-              ),
-            ],
+        _ResponsiveMetricRow(
+          leading: _InspectionsTodayCard(
+            inspectedToday: viewModel.inspectedToday,
+            totalProjects: viewModel.totalProjects,
+            onTap: onOpenProjects,
+          ),
+          trailing: _OverallAverageScoreCard(
+            score: viewModel.overallAverageScore,
+            onTap: onOpenProjects,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ResponsiveMetricRow extends StatelessWidget {
+  const _ResponsiveMetricRow({required this.leading, required this.trailing});
+
+  final Widget leading;
+  final Widget trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 620;
+        if (isNarrow) {
+          return Column(
+            children: [
+              leading,
+              const SizedBox(height: AppDimensions.md),
+              trailing,
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(child: leading),
+            const SizedBox(width: AppDimensions.md),
+            Expanded(child: trailing),
+          ],
+        );
+      },
     );
   }
 }

@@ -22,6 +22,9 @@ class ManagerDashboardScreen extends ConsumerWidget {
     final dashboardAsync = ref.watch(managerDashboardProvider);
     final currentUser = ref.watch(currentUserProvider);
 
+    void _navigateToProjects() => context.go(RouteNames.managerProjects);
+    void _navigateToUsers() => context.go(RouteNames.managerUsers);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(currentUser?.name ?? 'Manager'),
@@ -95,55 +98,49 @@ class ManagerDashboardScreen extends ConsumerWidget {
                   style: AppTextStyles.pageTitle,
                 ),
                 const SizedBox(height: AppDimensions.spacingSection),
-                Row(
-                  children: [
-                    Expanded(
-                      child: StatsCardWidget(
-                        title: 'Total Projects',
-                        value: '$totalProjects',
-                        subtitle: 'Tracked this cycle',
-                        icon: Icons.apartment_outlined,
-                        iconColor: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(width: AppDimensions.sm),
-                    Expanded(
-                      child: StatsCardWidget(
-                        title: 'Supervisors',
-                        value: '$totalSupervisors',
-                        subtitle: 'Active supervisors',
-                        icon: Icons.people_outline,
-                        iconColor: AppColors.success,
-                      ),
-                    ),
-                  ],
+                _ResponsiveStatsRow(
+                  leading: StatsCardWidget(
+                    title: 'Total Projects',
+                    value: '$totalProjects',
+                    subtitle: 'Tracked this cycle',
+                    icon: Icons.apartment_outlined,
+                    iconColor: AppColors.primary,
+                    onTap: _navigateToProjects,
+                  ),
+                  trailing: StatsCardWidget(
+                    title: 'Supervisors',
+                    value: '$totalSupervisors',
+                    subtitle: 'Active supervisors',
+                    icon: Icons.people_outline,
+                    iconColor: AppColors.success,
+                    onTap: _navigateToUsers,
+                  ),
                 ),
                 const SizedBox(height: AppDimensions.spacingCard),
-                Row(
-                  children: [
-                    Expanded(
-                      child: StatsCardWidget(
-                        title: 'Average Score',
-                        value: '${averageScore.toStringAsFixed(1)}%',
-                        subtitle: 'Across all projects',
-                        icon: Icons.assessment_outlined,
-                        iconColor: AppColors.warning,
-                      ),
-                    ),
-                    const SizedBox(width: AppDimensions.sm),
-                    Expanded(
-                      child: StatsCardWidget(
-                        title: 'Completion Rate',
-                        value: '${completionRate.toStringAsFixed(0)}%',
-                        subtitle: 'Projects closed',
-                        icon: Icons.check_circle_outline,
-                        iconColor: AppColors.success,
-                      ),
-                    ),
-                  ],
+                _ResponsiveStatsRow(
+                  leading: StatsCardWidget(
+                    title: 'Average Score',
+                    value: '${averageScore.toStringAsFixed(1)}%',
+                    subtitle: 'Across all projects',
+                    icon: Icons.assessment_outlined,
+                    iconColor: AppColors.warning,
+                    onTap: _navigateToProjects,
+                  ),
+                  trailing: StatsCardWidget(
+                    title: 'Completion Rate',
+                    value: '${completionRate.toStringAsFixed(0)}%',
+                    subtitle: 'Projects closed',
+                    icon: Icons.check_circle_outline,
+                    iconColor: AppColors.success,
+                    onTap: _navigateToProjects,
+                  ),
                 ),
                 const SizedBox(height: AppDimensions.spacingSection),
-                _PerformanceCard(gradeLabel: gradeLabel, score: averageScore),
+                _PerformanceCard(
+                  gradeLabel: gradeLabel,
+                  score: averageScore,
+                  onTap: _navigateToProjects,
+                ),
                 const SizedBox(height: AppDimensions.spacingSection),
                 Text('Top 5 Projects', style: AppTextStyles.sectionTitle),
                 const SizedBox(height: AppDimensions.sm),
@@ -154,6 +151,9 @@ class ManagerDashboardScreen extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.md,
                         vertical: AppDimensions.sm,
+                      ),
+                      onTap: () => context.push(
+                        RouteNames.managerReport('${p['p_id']}'),
                       ),
                       child: Text(
                         p['name'] as String? ?? '',
@@ -173,6 +173,9 @@ class ManagerDashboardScreen extends ConsumerWidget {
                         horizontal: AppDimensions.md,
                         vertical: AppDimensions.sm,
                       ),
+                      onTap: () => context.push(
+                        RouteNames.managerReport('${p['p_id']}'),
+                      ),
                       child: Text(
                         p['name'] as String? ?? '',
                         style: AppTextStyles.body,
@@ -191,6 +194,7 @@ class ManagerDashboardScreen extends ConsumerWidget {
                         horizontal: AppDimensions.md,
                         vertical: AppDimensions.sm,
                       ),
+                      onTap: _navigateToProjects,
                       child: Row(
                         children: [
                           Expanded(
@@ -199,8 +203,9 @@ class ManagerDashboardScreen extends ConsumerWidget {
                               style: AppTextStyles.body,
                             ),
                           ),
-                          SizedBox(
-                            width: 120,
+                          const SizedBox(width: AppDimensions.sm),
+                          Flexible(
+                            flex: 2,
                             child: LinearProgressIndicator(
                               value: ((service['average_score'] as num?) ?? 0)
                                   .toDouble(),
@@ -226,14 +231,19 @@ class ManagerDashboardScreen extends ConsumerWidget {
 }
 
 class _PerformanceCard extends StatelessWidget {
-  const _PerformanceCard({required this.gradeLabel, required this.score});
+  const _PerformanceCard({
+    required this.gradeLabel,
+    required this.score,
+    this.onTap,
+  });
 
   final String gradeLabel;
   final num score;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final content = Container(
       padding: AppDimensions.cardPadding,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
@@ -269,6 +279,50 @@ class _PerformanceCard extends StatelessWidget {
           AppGradeBadge(label: gradeLabel, score: score),
         ],
       ),
+    );
+
+    if (onTap == null) return content;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+        onTap: onTap,
+        child: content,
+      ),
+    );
+  }
+}
+
+class _ResponsiveStatsRow extends StatelessWidget {
+  const _ResponsiveStatsRow({required this.leading, required this.trailing});
+
+  final Widget leading;
+  final Widget trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 620;
+        if (isNarrow) {
+          return Column(
+            children: [
+              leading,
+              const SizedBox(height: AppDimensions.sm),
+              trailing,
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(child: leading),
+            const SizedBox(width: AppDimensions.sm),
+            Expanded(child: trailing),
+          ],
+        );
+      },
     );
   }
 }

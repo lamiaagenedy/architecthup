@@ -101,7 +101,10 @@ class _ProjectsListScreenState extends ConsumerState<ProjectsListScreen> {
         onSearchChanged: _handleSearchChanged,
         onStatusSelected: _handleStatusSelected,
         onRefresh: _refreshProjects,
-        child: ProjectsErrorView(onRetry: _refreshProjects),
+        child: ProjectsErrorView(
+          onRetry: _refreshProjects,
+          message: _resolveErrorMessage(error),
+        ),
       ),
     );
   }
@@ -117,6 +120,14 @@ class _ProjectsListScreenState extends ConsumerState<ProjectsListScreen> {
   Future<void> _refreshProjects() async {
     ref.invalidate(projectsListProvider);
     await ref.read(projectsListProvider.future);
+  }
+
+  String _resolveErrorMessage(Object error) {
+    final message = error.toString().trim();
+    if (message.isEmpty) {
+      return 'Something went wrong while loading projects.';
+    }
+    return message;
   }
 }
 

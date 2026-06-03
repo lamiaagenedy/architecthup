@@ -1,4 +1,5 @@
 import '../../../../core/exceptions/network_exception.dart';
+import '../../../../core/logger/app_logger.dart';
 import '../../../../core/network/api_response_parser.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../domain/entities/project_list_item.dart';
@@ -13,13 +14,21 @@ class ProjectsRemoteDatasource {
       final response = await _dioClient.dio.get<dynamic>('/projects/mine');
       final rows = ApiResponseParser.extractList(response);
       return rows.map(_mapProject).toList();
-    } catch (error) {
-      throw NetworkException(error.toString());
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'Failed to load supervisor projects',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      throw NetworkException('Unable to load assigned projects.');
     }
   }
 
   ProjectListItem _mapProject(Map<String, dynamic> json) {
-    final progressPercent = (json['progress'] as num?)?.toDouble() ?? 0;
+    final progressPercent = _parseNum(
+      json['progress'],
+      field: 'progress',
+    ).toDouble();
     final progress = progressPercent / 100;
     final grade = json['grade'] as String? ?? '—';
 
@@ -47,5 +56,17 @@ class ProjectsRemoteDatasource {
       grade: grade,
       uId: json['u_id']?.toString(),
     );
+  }
+
+  num _parseNum(dynamic value, {required String field}) {
+    if (value is num) {
+      return value;
+    }
+    final parsed = num.tryParse(value?.toString() ?? '');
+    if (parsed == null) {
+      AppLogger.warning('Unexpected $field value: $value');
+      return 0;
+    }
+    return parsed;
   }
 }

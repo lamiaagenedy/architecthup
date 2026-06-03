@@ -28,9 +28,10 @@ class ProjectsLoadingView extends StatelessWidget {
 }
 
 class ProjectsErrorView extends StatelessWidget {
-  const ProjectsErrorView({required this.onRetry, super.key});
+  const ProjectsErrorView({required this.onRetry, this.message, super.key});
 
   final VoidCallback onRetry;
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +48,9 @@ class ProjectsErrorView extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.sm),
             Text(
-              'Try again to refresh the latest project list.',
+              message?.trim().isNotEmpty == true
+                  ? message!.trim()
+                  : 'Try again to refresh the latest project list.',
               style: AppTextStyles.secondary,
               textAlign: TextAlign.center,
             ),

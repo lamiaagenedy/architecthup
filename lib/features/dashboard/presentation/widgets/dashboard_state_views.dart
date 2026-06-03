@@ -27,9 +27,10 @@ class DashboardLoadingView extends StatelessWidget {
 }
 
 class DashboardErrorView extends StatelessWidget {
-  const DashboardErrorView({required this.onRetry, super.key});
+  const DashboardErrorView({required this.onRetry, this.message, super.key});
 
   final VoidCallback onRetry;
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +47,9 @@ class DashboardErrorView extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.sm),
             Text(
-              'Check again for the latest project snapshot.',
+              message?.trim().isNotEmpty == true
+                  ? message!.trim()
+                  : 'Check again for the latest project snapshot.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),

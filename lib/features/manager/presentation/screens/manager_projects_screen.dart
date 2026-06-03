@@ -53,12 +53,12 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
           separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.sm),
           itemBuilder: (context, index) {
             final project = projects[index];
-            final progress = (project['progress'] as num?) ?? 0;
+            final progress = _parseNum(project['progress']);
             final grade = project['grade']?.toString() ?? '—';
+            final projectId = _parseInt(project['p_id']);
 
             return AppCard(
-              onTap: () =>
-                  context.push(RouteNames.managerReport('${project['p_id']}')),
+              onTap: () => context.push(RouteNames.managerReport('$projectId')),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -101,12 +101,11 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.refresh),
-                        onPressed: () =>
-                            _flagReinspection('${project['p_id']}'),
+                        onPressed: () => _flagReinspection('$projectId'),
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete_outline),
-                        onPressed: () => _deleteProject('${project['p_id']}'),
+                        onPressed: () => _deleteProject('$projectId'),
                       ),
                     ],
                   ),
@@ -162,7 +161,7 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
     Map<String, dynamic> project,
     List<Map<String, dynamic>> users,
   ) async {
-    int? selected = project['u_id'] as int?;
+    int? selected = _parseNullableInt(project['u_id']);
     selected = await showDialog<int>(
       context: context,
       builder: (context) => SimpleDialog(
@@ -170,7 +169,8 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
         children: users
             .map(
               (user) => SimpleDialogOption(
-                onPressed: () => Navigator.pop(context, user['U_ID'] as int),
+                onPressed: () =>
+                    Navigator.pop(context, _parseInt(user['U_ID'])),
                 child: Text(user['Name'] as String? ?? ''),
               ),
             )
@@ -179,13 +179,11 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
     );
 
     if (selected == null) return;
+    final projectId = _parseInt(project['p_id']);
 
     await ref
         .read(managerRemoteDatasourceProvider)
-        .assignProject(
-          projectId: project['p_id'] as int,
-          supervisorId: selected,
-        );
+        .assignProject(projectId: projectId, supervisorId: selected);
     ref.invalidate(managerProjectsApiProvider);
   }
 
@@ -193,7 +191,9 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
     final nameController = TextEditingController();
     final locationController = TextEditingController();
     final companyController = TextEditingController();
-    int? supervisorId = users.isNotEmpty ? users.first['U_ID'] as int? : null;
+    int? supervisorId = users.isNotEmpty
+        ? _parseNullableInt(users.first['U_ID'])
+        : null;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -220,7 +220,7 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
                 items: users
                     .map(
                       (user) => DropdownMenuItem<int>(
-                        value: user['U_ID'] as int,
+                        value: _parseInt(user['U_ID']),
                         child: Text(user['Name'] as String? ?? ''),
                       ),
                     )
@@ -255,5 +255,20 @@ class _ManagerProjectsScreenState extends ConsumerState<ManagerProjectsScreen> {
           supervisorId: supervisorId!,
         );
     ref.invalidate(managerProjectsApiProvider);
+  }
+
+  num _parseNum(dynamic value) {
+    return num.tryParse(value?.toString() ?? '0') ?? 0;
+  }
+
+  int _parseInt(dynamic value) {
+    return int.tryParse(value?.toString() ?? '0') ?? 0;
+  }
+
+  int? _parseNullableInt(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+    return int.tryParse(value.toString());
   }
 }
