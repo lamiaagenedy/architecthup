@@ -1,32 +1,33 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/dashboard_snapshot.dart';
 
 ({Color background, Color border, Color foreground}) dashboardToneColors(
   BuildContext context,
   DashboardTone tone,
 ) {
+  final colorScheme = Theme.of(context).colorScheme;
+
   return switch (tone) {
     DashboardTone.positive => (
-      background: AppColors.success.withValues(alpha: 0.12),
-      border: AppColors.success.withValues(alpha: 0.25),
-      foreground: AppColors.success,
+      background: colorScheme.secondaryContainer.withValues(alpha: 0.55),
+      border: colorScheme.secondary.withValues(alpha: 0.18),
+      foreground: colorScheme.secondary,
     ),
     DashboardTone.caution => (
-      background: AppColors.warning.withValues(alpha: 0.12),
-      border: AppColors.warning.withValues(alpha: 0.25),
-      foreground: AppColors.warning,
+      background: Colors.orange.shade50,
+      border: Colors.orange.shade200,
+      foreground: Colors.orange.shade700,
     ),
     DashboardTone.critical => (
-      background: AppColors.danger.withValues(alpha: 0.12),
-      border: AppColors.danger.withValues(alpha: 0.25),
-      foreground: AppColors.danger,
+      background: colorScheme.errorContainer.withValues(alpha: 0.55),
+      border: colorScheme.error.withValues(alpha: 0.16),
+      foreground: colorScheme.error,
     ),
     DashboardTone.neutral => (
-      background: AppColors.divider,
-      border: AppColors.divider,
-      foreground: AppColors.textSecondary,
+      background: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+      border: colorScheme.outlineVariant.withValues(alpha: 0.6),
+      foreground: colorScheme.onSurfaceVariant,
     ),
   };
 }

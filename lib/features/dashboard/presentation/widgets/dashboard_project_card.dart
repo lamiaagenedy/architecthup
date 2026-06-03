@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_dimensions.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/widgets/app_card.dart';
+import '../../../../core/constants/app_dimensions.dart';
 import '../../domain/entities/dashboard_snapshot.dart';
 import 'dashboard_tone_styles.dart';
 
@@ -16,7 +13,17 @@ class DashboardProjectCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = dashboardToneColors(context, project.statusTone);
 
-    return AppCard(
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.md),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Theme.of(
+            context,
+          ).colorScheme.outlineVariant.withValues(alpha: 0.7),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -27,9 +34,19 @@ class DashboardProjectCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(project.name, style: AppTextStyles.cardTitle),
+                    Text(
+                      project.name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(height: AppDimensions.xs),
-                    Text(project.location, style: AppTextStyles.secondary),
+                    Text(
+                      project.location,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -42,11 +59,10 @@ class DashboardProjectCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: colors.background,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: colors.border),
                 ),
                 child: Text(
                   project.statusLabel,
-                  style: AppTextStyles.caption.copyWith(
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: colors.foreground,
                     fontWeight: FontWeight.w700,
                   ),
@@ -63,17 +79,15 @@ class DashboardProjectCard extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: project.progress,
                     minHeight: 8,
-                    backgroundColor: AppColors.divider,
-                    color: colors.foreground,
                   ),
                 ),
               ),
               const SizedBox(width: AppDimensions.sm),
               Text(
                 '${(project.progress * 100).round()}%',
-                style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
               ),
             ],
           ),

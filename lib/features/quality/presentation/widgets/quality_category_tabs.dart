@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_dimensions.dart';
+import '../../../../core/constants/app_dimensions.dart';
 import '../constants/quality_checklist_items.dart';
 import 'quality_checklist_section.dart';
 

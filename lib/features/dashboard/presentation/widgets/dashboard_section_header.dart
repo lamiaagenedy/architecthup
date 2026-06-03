@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_dimensions.dart';
-import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/constants/app_dimensions.dart';
 
 class DashboardSectionHeader extends StatelessWidget {
   const DashboardSectionHeader({
@@ -28,6 +26,8 @@ class DashboardSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final trailingWidget =
         trailing ??
         (actionText != null
@@ -41,8 +41,8 @@ class DashboardSectionHeader extends StatelessWidget {
                   minimumSize: const Size(0, 36),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.compact,
-                  foregroundColor: AppColors.primary,
-                  textStyle: AppTextStyles.caption.copyWith(
+                  foregroundColor: colorScheme.primary,
+                  textStyle: textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -67,22 +67,38 @@ class DashboardSectionHeader extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Container(
+                width: 28,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              const SizedBox(height: AppDimensions.sm),
               if (eyebrow != null) ...[
                 Text(
                   eyebrow!.toUpperCase(),
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorScheme.primary.withValues(alpha: 0.86),
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.9,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.xs),
+                const SizedBox(height: 6),
               ],
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Text(title, style: AppTextStyles.sectionTitle),
+                    child: Text(
+                      title,
+                      style: textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        height: 1.06,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                   ),
                   if (!compactActionLayout && trailingWidget != null) ...[
                     const SizedBox(width: AppDimensions.md),
@@ -99,7 +115,13 @@ class DashboardSectionHeader extends StatelessWidget {
                   constraints: BoxConstraints(
                     maxWidth: trailingWidget == null ? double.infinity : 560,
                   ),
-                  child: Text(subtitle!, style: AppTextStyles.secondary),
+                  child: Text(
+                    subtitle!,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      height: 1.45,
+                    ),
+                  ),
                 ),
               ],
               if (compactActionLayout) ...[

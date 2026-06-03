@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_dimensions.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/widgets/app_card.dart';
+import '../../../../core/constants/app_dimensions.dart';
 
 class DashboardLoadingView extends StatelessWidget {
   const DashboardLoadingView({super.key});
@@ -19,7 +16,7 @@ class DashboardLoadingView extends StatelessWidget {
           child: Container(
             height: index == 0 ? 140 : 110,
             decoration: BoxDecoration(
-              color: AppColors.divider,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(24),
             ),
           ),
@@ -39,25 +36,25 @@ class DashboardErrorView extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.lg),
-        child: AppCard(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Unable to load dashboard',
-                style: AppTextStyles.sectionTitle,
-                textAlign: TextAlign.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Unable to load dashboard',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppDimensions.sm),
+            Text(
+              'Check again for the latest project snapshot.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-              const SizedBox(height: AppDimensions.sm),
-              Text(
-                'Check again for the latest project snapshot.',
-                style: AppTextStyles.secondary,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppDimensions.lg),
-              FilledButton(onPressed: onRetry, child: const Text('Try again')),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppDimensions.lg),
+            FilledButton(onPressed: onRetry, child: const Text('Try again')),
+          ],
         ),
       ),
     );
@@ -72,23 +69,22 @@ class DashboardEmptyView extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.lg),
-        child: AppCard(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'No active dashboard data yet',
-                style: AppTextStyles.sectionTitle,
-                textAlign: TextAlign.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'No active dashboard data yet',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: AppDimensions.sm),
+            Text(
+              'Project summaries and field activity will appear here once connected.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-              const SizedBox(height: AppDimensions.sm),
-              Text(
-                'Project summaries and field activity will appear here once connected.',
-                style: AppTextStyles.secondary,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_dimensions.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/widgets/app_card.dart';
+import '../../../../core/constants/app_dimensions.dart';
 import '../../domain/entities/dashboard_snapshot.dart';
 import 'dashboard_tone_styles.dart';
 
@@ -31,14 +29,31 @@ class DashboardListTileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = dashboardToneColors(context, _tone);
 
-    return AppCard(
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.md),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Theme.of(
+            context,
+          ).colorScheme.outlineVariant.withValues(alpha: 0.7),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: Text(_title, style: AppTextStyles.cardTitle)),
+              Expanded(
+                child: Text(
+                  _title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
               if (_badge != null) ...[
                 const SizedBox(width: AppDimensions.sm),
                 Container(
@@ -49,11 +64,10 @@ class DashboardListTileCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: colors.background,
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: colors.border),
                   ),
                   child: Text(
                     _badge,
-                    style: AppTextStyles.caption.copyWith(
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       color: colors.foreground,
                       fontWeight: FontWeight.w700,
                     ),
@@ -63,9 +77,14 @@ class DashboardListTileCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppDimensions.sm),
-          Text(_subtitle, style: AppTextStyles.body),
+          Text(_subtitle, style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: AppDimensions.xs),
-          Text(_supporting, style: AppTextStyles.secondary),
+          Text(
+            _supporting,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
