@@ -7,8 +7,6 @@ abstract final class RouteNames {
   static const String projectServicesPath = 'services';
   static const String serviceChecklistPath = ':serviceId/checklist';
   static const String projectChecklistPath = 'checklist';
-  static const String tasks = '/tasks';
-  static const String map = '/map';
   static const String profile = '/profile';
 
   static const String managerDashboard = '/manager/dashboard';

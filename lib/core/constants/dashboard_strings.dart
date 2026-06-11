@@ -59,19 +59,5 @@ abstract final class DashboardStrings {
   static const String allProjectsPerformingWell =
       'All projects performing well';
 
-  static const String sectionQuickActionsTitle = 'Quick Actions';
-  static const String sectionQuickActionsEyebrow = 'Workspace Shortcuts';
-  static const String sectionQuickActionsSubtitle =
-      'Jump directly to your most-used modules.';
-  static const String actionProjects = 'Projects';
-  static const String actionTasks = 'Tasks';
-  static const String actionMap = 'Map';
-  static const String actionProfile = 'Profile';
 
-  static const String sectionMyTasksTitle = 'My Tasks';
-  static const String sectionMyTasksEyebrow = 'Daily Workload';
-  static const String sectionMyTasksSubtitle =
-      'Pending task highlights from today\'s schedule.';
-  static const String viewAllTasks = 'View all tasks';
-  static const String noPendingTasksToday = 'No pending tasks today';
 }

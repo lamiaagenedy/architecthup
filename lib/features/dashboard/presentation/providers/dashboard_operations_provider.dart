@@ -49,21 +49,12 @@ class DashboardInspectionProject {
   final List<DashboardCategoryScore> categoryScores;
 }
 
-class DashboardTaskSnapshotItem {
-  const DashboardTaskSnapshotItem({
-    required this.title,
-    required this.projectName,
-  });
 
-  final String title;
-  final String projectName;
-}
 
 class DashboardOperationsViewModel {
   const DashboardOperationsViewModel({
     required this.headerDateLabel,
     required this.activeProjectCount,
-    required this.pendingTaskCount,
     required this.inspectionProjects,
     required this.highestRatedProject,
     required this.lowestRatedProject,
@@ -73,12 +64,10 @@ class DashboardOperationsViewModel {
     required this.progressProjects,
     required this.categoryAverages,
     required this.attentionItems,
-    required this.pendingTasks,
   });
 
   final String headerDateLabel;
   final int activeProjectCount;
-  final int pendingTaskCount;
   final List<DashboardInspectionProject> inspectionProjects;
   final DashboardInspectionProject? highestRatedProject;
   final DashboardInspectionProject? lowestRatedProject;
@@ -88,7 +77,6 @@ class DashboardOperationsViewModel {
   final List<ProjectListItem> progressProjects;
   final List<DashboardCategoryScore> categoryAverages;
   final List<DashboardInspectionProject> attentionItems;
-  final List<DashboardTaskSnapshotItem> pendingTasks;
 }
 
 final dashboardOperationsViewModelProvider =
@@ -161,29 +149,13 @@ DashboardOperationsViewModel _buildDashboardOperationsViewModel(
     );
   }).toList();
 
-  final pendingTasks = snapshot.upcomingItems
-      .where((item) => item.categoryLabel.toLowerCase() == 'task')
-      .take(3)
-      .map(
-        (item) => DashboardTaskSnapshotItem(
-          title: item.title,
-          projectName: item.projectName,
-        ),
-      )
-      .toList();
-
   final activeProjectCount = projects
       .where((project) => project.status == ProjectStatus.inProgress)
-      .length;
-
-  final pendingTaskCount = snapshot.upcomingItems
-      .where((item) => item.categoryLabel.toLowerCase() == 'task')
       .length;
 
   return DashboardOperationsViewModel(
     headerDateLabel: _formatHeaderDate(DateTime.now()),
     activeProjectCount: activeProjectCount,
-    pendingTaskCount: pendingTaskCount,
     inspectionProjects: inspectionProjects,
     highestRatedProject: highestRatedProject,
     lowestRatedProject: lowestRatedProject,
@@ -193,7 +165,6 @@ DashboardOperationsViewModel _buildDashboardOperationsViewModel(
     progressProjects: sortedProjects.take(5).toList(),
     categoryAverages: categoryAverages,
     attentionItems: attentionItems,
-    pendingTasks: pendingTasks,
   );
 }
 

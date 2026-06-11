@@ -8,7 +8,6 @@ import '../../features/manager/presentation/screens/manager_dashboard_screen.dar
 import '../../features/manager/presentation/screens/manager_projects_screen.dart';
 import '../../features/manager/presentation/screens/manager_report_screen.dart';
 import '../../features/manager/presentation/screens/manager_users_screen.dart';
-import '../../features/maps/presentation/screens/map_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/project_details/presentation/screens/project_details_screen.dart';
 import '../../features/projects/domain/entities/project_list_item.dart';
@@ -18,7 +17,6 @@ import '../../features/quality/presentation/screens/services_list_screen.dart';
 import '../../features/quality/presentation/screens/stats_screen.dart';
 import '../../features/splash/presentation/providers/splash_flow_provider.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
-import '../../features/tasks/presentation/screens/tasks_list_screen.dart';
 import 'app_shell_scaffold.dart';
 import 'navigation_observer.dart';
 import 'route_names.dart';
@@ -194,26 +192,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     ],
                   ),
                 ],
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: RouteNames.tasks,
-                name: 'tasks',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: TasksListScreen()),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: RouteNames.map,
-                name: 'map',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: MapScreen()),
               ),
             ],
           ),

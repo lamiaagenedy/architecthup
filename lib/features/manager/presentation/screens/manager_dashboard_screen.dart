@@ -12,7 +12,6 @@ import '../../../../core/widgets/app_grade_badge.dart';
 import '../../../../core/widgets/app_icon_container.dart';
 import '../providers/manager_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../quality/presentation/widgets/stats_card_widget.dart';
 
 class ManagerDashboardScreen extends ConsumerWidget {
   const ManagerDashboardScreen({super.key});
@@ -22,27 +21,56 @@ class ManagerDashboardScreen extends ConsumerWidget {
     final dashboardAsync = ref.watch(managerDashboardProvider);
     final currentUser = ref.watch(currentUserProvider);
 
-    void _navigateToProjects() => context.go(RouteNames.managerProjects);
-    void _navigateToUsers() => context.go(RouteNames.managerUsers);
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF6F7FB),
       appBar: AppBar(
-        title: Text(currentUser?.name ?? 'Manager'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.verified_outlined,
+                color: AppColors.primary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'ACES Manager',
+              style: AppTextStyles.sectionTitle.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.people_outline),
+            icon: Icon(Icons.people_outline, color: AppColors.primary),
+            tooltip: 'Supervisors',
             onPressed: () => context.go(RouteNames.managerUsers),
           ),
           IconButton(
-            icon: const Icon(Icons.apartment_outlined),
+            icon: Icon(Icons.apartment_outlined, color: AppColors.primary),
+            tooltip: 'Projects',
             onPressed: () => context.go(RouteNames.managerProjects),
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.redAccent),
+            tooltip: 'Logout',
             onPressed: () async {
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   title: const Text('Logout'),
                   content: const Text('Are you sure you want to logout?'),
                   actions: [
@@ -52,14 +80,15 @@ class ManagerDashboardScreen extends ConsumerWidget {
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(true),
-                      child: const Text('Logout'),
+                      child: const Text(
+                        'Logout',
+                        style: TextStyle(color: Colors.redAccent),
+                      ),
                     ),
                   ],
                 ),
               );
-
               if (confirm != true) return;
-
               await ref.read(authControllerProvider.notifier).logout();
               await ref.read(authLocalDatasourceProvider).clearSession();
               context.go(RouteNames.login);
@@ -77,13 +106,14 @@ class ManagerDashboardScreen extends ConsumerWidget {
               .cast<Map<String, dynamic>>();
           final serviceAvgs = (data['per_service_average'] as List? ?? [])
               .cast<Map<String, dynamic>>();
-          final totalProjects = (data['total_projects'] as num?) ?? 0;
-          final totalSupervisors = (data['total_supervisors'] as num?) ?? 0;
-          final averageScore = ((data['average_score'] as num?) ?? 0) * 100;
+          final totalProjects = num.tryParse(data['total_projects']?.toString() ?? '0') ?? 0;
+          final totalSupervisors = num.tryParse(data['total_supervisors']?.toString() ?? '0') ?? 0;
+          final averageScore =
+              (double.tryParse(data['average_score']?.toString() ?? '0') ?? 0.0) * 100;
           final completionRate = totalProjects == 0
-              ? 0
-              : ((totalProjects - incomplete.length) / totalProjects) * 100;
-          final gradeLabel = _gradeLabel(averageScore);
+              ? 0.0
+              : ((totalProjects - incomplete.length) / totalProjects.toInt()) *
+                    100;
 
           return RefreshIndicator(
             onRefresh: () async {
@@ -91,246 +121,764 @@ class ManagerDashboardScreen extends ConsumerWidget {
               await ref.read(managerDashboardProvider.future);
             },
             child: ListView(
-              padding: AppDimensions.screenPadding,
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
               children: [
                 Text(
-                  'Welcome back, ${currentUser?.name ?? 'Manager'}',
+                  'Welcome back,',
+                  style: AppTextStyles.body.copyWith(
+                    color: const Color(0xFF8E8E93),
+                  ),
+                ),
+                Text(
+                  currentUser?.name ?? 'Manager',
                   style: AppTextStyles.pageTitle,
                 ),
-                const SizedBox(height: AppDimensions.spacingSection),
-                _ResponsiveStatsRow(
-                  leading: StatsCardWidget(
-                    title: 'Total Projects',
-                    value: '$totalProjects',
-                    subtitle: 'Tracked this cycle',
-                    icon: Icons.apartment_outlined,
-                    iconColor: AppColors.primary,
-                    onTap: _navigateToProjects,
-                  ),
-                  trailing: StatsCardWidget(
-                    title: 'Supervisors',
-                    value: '$totalSupervisors',
-                    subtitle: 'Active supervisors',
-                    icon: Icons.people_outline,
-                    iconColor: AppColors.success,
-                    onTap: _navigateToUsers,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingCard),
-                _ResponsiveStatsRow(
-                  leading: StatsCardWidget(
-                    title: 'Average Score',
-                    value: '${averageScore.toStringAsFixed(1)}%',
-                    subtitle: 'Across all projects',
-                    icon: Icons.assessment_outlined,
-                    iconColor: AppColors.warning,
-                    onTap: _navigateToProjects,
-                  ),
-                  trailing: StatsCardWidget(
-                    title: 'Completion Rate',
-                    value: '${completionRate.toStringAsFixed(0)}%',
-                    subtitle: 'Projects closed',
-                    icon: Icons.check_circle_outline,
-                    iconColor: AppColors.success,
-                    onTap: _navigateToProjects,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingSection),
-                _PerformanceCard(
-                  gradeLabel: gradeLabel,
+                const SizedBox(height: 28),
+
+                _HeroPerformanceCard(
                   score: averageScore,
-                  onTap: _navigateToProjects,
+                  totalProjects: totalProjects.toInt(),
+                  totalSupervisors: totalSupervisors.toInt(),
+                  onTap: () => context.go(RouteNames.managerProjects),
                 ),
-                const SizedBox(height: AppDimensions.spacingSection),
-                Text('Top 5 Projects', style: AppTextStyles.sectionTitle),
-                const SizedBox(height: AppDimensions.sm),
-                ...topProjects.map(
-                  (p) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppDimensions.sm),
-                    child: AppCard(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.md,
-                        vertical: AppDimensions.sm,
+                const SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: _MiniStatCard(
+                        label: 'Active Projects',
+                        value: '$totalProjects',
+                        icon: Icons.apartment_outlined,
+                        iconColor: AppColors.primary,
+                        onTap: () => context.go(RouteNames.managerProjects),
                       ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _MiniStatCard(
+                        label: 'Field Supervisors',
+                        value: '$totalSupervisors',
+                        icon: Icons.people_outline,
+                        iconColor: const Color(0xFF34C759),
+                        onTap: () => context.go(RouteNames.managerUsers),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _MiniStatCard(
+                        label: 'Avg Inspection Score',
+                        value: '${averageScore.toStringAsFixed(1)}%',
+                        icon: Icons.assessment_outlined,
+                        iconColor: const Color(0xFFFF9500),
+                        onTap: () => context.go(RouteNames.managerProjects),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _MiniStatCard(
+                        label: 'Fully Inspected',
+                        value: '${completionRate.toStringAsFixed(0)}%',
+                        icon: Icons.check_circle_outline,
+                        iconColor: const Color(0xFF34C759),
+                        onTap: () => context.go(RouteNames.managerProjects),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 28),
+
+                _SectionHeader(
+                  title: 'Performance by Service Category',
+                  icon: Icons.bar_chart_outlined,
+                ),
+                const SizedBox(height: 12),
+                _ServicePerformanceCard(serviceAvgs: serviceAvgs),
+                const SizedBox(height: 28),
+
+                _SectionHeader(
+                  title: 'Top Performing Sites',
+                  icon: Icons.trending_up_outlined,
+                  iconColor: const Color(0xFF34C759),
+                ),
+                const SizedBox(height: 12),
+                if (topProjects.isEmpty)
+                  const _EmptyState(message: 'No project data yet')
+                else
+                  ...topProjects.asMap().entries.map(
+                    (e) => _ProjectListTile(
+                      rank: e.key + 1,
+                      project: e.value,
+                      isTop: true,
+                      onTap: () => context.push(
+                        RouteNames.managerReport('${e.value['p_id']}'),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 28),
+
+                _SectionHeader(
+                  title: 'Sites Needing Attention',
+                  icon: Icons.warning_amber_outlined,
+                  iconColor: const Color(0xFFFF3B30),
+                ),
+                const SizedBox(height: 12),
+                if (bottomProjects.isEmpty)
+                  const _EmptyState(message: 'All sites performing well')
+                else
+                  ...bottomProjects.asMap().entries.map(
+                    (e) => _ProjectListTile(
+                      rank: e.key + 1,
+                      project: e.value,
+                      isTop: false,
+                      onTap: () => context.push(
+                        RouteNames.managerReport('${e.value['p_id']}'),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 28),
+
+                if (incomplete.isNotEmpty) ...[
+                  _SectionHeader(
+                    title: 'Pending Inspections',
+                    icon: Icons.pending_outlined,
+                    iconColor: const Color(0xFFFF9500),
+                  ),
+                  const SizedBox(height: 12),
+                  ...incomplete.map(
+                    (p) => _IncompleteProjectTile(
+                      project: p,
                       onTap: () => context.push(
                         RouteNames.managerReport('${p['p_id']}'),
                       ),
-                      child: Text(
-                        p['name'] as String? ?? '',
-                        style: AppTextStyles.body,
-                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: AppDimensions.spacingSection),
-                Text('Bottom 5 Projects', style: AppTextStyles.sectionTitle),
-                const SizedBox(height: AppDimensions.sm),
-                ...bottomProjects.map(
-                  (p) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppDimensions.sm),
-                    child: AppCard(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.md,
-                        vertical: AppDimensions.sm,
-                      ),
-                      onTap: () => context.push(
-                        RouteNames.managerReport('${p['p_id']}'),
-                      ),
-                      child: Text(
-                        p['name'] as String? ?? '',
-                        style: AppTextStyles.body,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingSection),
-                Text('Service Performance', style: AppTextStyles.sectionTitle),
-                const SizedBox(height: AppDimensions.sm),
-                ...serviceAvgs.map(
-                  (service) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppDimensions.sm),
-                    child: AppCard(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.md,
-                        vertical: AppDimensions.sm,
-                      ),
-                      onTap: _navigateToProjects,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              service['service_name'] as String? ?? 'Service',
-                              style: AppTextStyles.body,
-                            ),
-                          ),
-                          const SizedBox(width: AppDimensions.sm),
-                          Flexible(
-                            flex: 2,
-                            child: LinearProgressIndicator(
-                              value: ((service['average_score'] as num?) ?? 0)
-                                  .toDouble(),
-                              minHeight: 8,
-                              backgroundColor: AppColors.divider,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                ],
               ],
             ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text(error.toString())),
+        error: (error, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 48,
+                color: Colors.redAccent.withOpacity(0.6),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Failed to load dashboard',
+                style: AppTextStyles.sectionTitle,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error.toString(),
+                style: AppTextStyles.secondary,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _PerformanceCard extends StatelessWidget {
-  const _PerformanceCard({
-    required this.gradeLabel,
+// ─── Hero Performance Card ────────────────────────────────────────────────────
+
+class _HeroPerformanceCard extends StatelessWidget {
+  const _HeroPerformanceCard({
     required this.score,
+    required this.totalProjects,
+    required this.totalSupervisors,
     this.onTap,
   });
 
-  final String gradeLabel;
-  final num score;
+  final double score;
+  final int totalProjects;
+  final int totalSupervisors;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final content = Container(
-      padding: AppDimensions.cardPadding,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF4A90D9), Color(0xFF6EB5FF)],
-        ),
-      ),
-      child: Row(
-        children: [
-          const AppIconContainer(
-            icon: Icons.stars_outlined,
-            color: Colors.white,
+    final grade = _getGrade(score);
+    final gradeColor = _getGradeColor(score);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF2C5F9E), Color(0xFF4A90D9)],
           ),
-          const SizedBox(width: AppDimensions.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF4A90D9).withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  'Overall Performance',
-                  style: AppTextStyles.secondary.copyWith(color: Colors.white),
+                const Icon(
+                  Icons.verified_outlined,
+                  color: Colors.white70,
+                  size: 18,
                 ),
-                const SizedBox(height: AppDimensions.xs),
-                Text(
-                  '${score.toStringAsFixed(1)}%',
-                  style: AppTextStyles.pageTitle.copyWith(color: Colors.white),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Overall Inspection Performance',
+                    style: AppTextStyles.secondary.copyWith(
+                      color: Colors.white70,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: gradeColor.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: gradeColor.withOpacity(0.6),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    grade,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
-          AppGradeBadge(label: gradeLabel, score: score),
-        ],
-      ),
-    );
-
-    if (onTap == null) return content;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-        onTap: onTap,
-        child: content,
+            const SizedBox(height: 16),
+            Text(
+              '${score.toStringAsFixed(1)}%',
+              style: const TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                letterSpacing: -1,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: score / 100,
+                minHeight: 6,
+                backgroundColor: Colors.white.withOpacity(0.2),
+                valueColor: AlwaysStoppedAnimation<Color>(gradeColor),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                _HeroStat(label: 'Projects', value: '$totalProjects'),
+                const SizedBox(width: 24),
+                _HeroStat(label: 'Supervisors', value: '$totalSupervisors'),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _ResponsiveStatsRow extends StatelessWidget {
-  const _ResponsiveStatsRow({required this.leading, required this.trailing});
-
-  final Widget leading;
-  final Widget trailing;
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({required this.label, required this.value});
+  final String label;
+  final String value;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isNarrow = constraints.maxWidth < 620;
-        if (isNarrow) {
-          return Column(
-            children: [
-              leading,
-              const SizedBox(height: AppDimensions.sm),
-              trailing,
-            ],
-          );
-        }
-
-        return Row(
-          children: [
-            Expanded(child: leading),
-            const SizedBox(width: AppDimensions.sm),
-            Expanded(child: trailing),
-          ],
-        );
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(color: Colors.white60),
+        ),
+      ],
     );
   }
 }
 
-String _gradeLabel(num score) {
-  if (score >= 90) return 'A';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C';
-  if (score >= 60) return 'D';
-  return 'F';
+// ─── Mini Stat Card ───────────────────────────────────────────────────────────
+
+class _MiniStatCard extends StatelessWidget {
+  const _MiniStatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.iconColor,
+    this.onTap,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color iconColor;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1A1A2E),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: AppTextStyles.caption,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Service Performance Card ─────────────────────────────────────────────────
+
+class _ServicePerformanceCard extends StatelessWidget {
+  const _ServicePerformanceCard({required this.serviceAvgs});
+  final List<Map<String, dynamic>> serviceAvgs;
+
+  @override
+  Widget build(BuildContext context) {
+    final serviceIcons = {
+      'House Keeping': Icons.cleaning_services_outlined,
+      'Pest Control': Icons.bug_report_outlined,
+      'MEP': Icons.electrical_services_outlined,
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: serviceAvgs.asMap().entries.map((e) {
+          final service = e.value;
+          final isLast = e.key == serviceAvgs.length - 1;
+          final name = service['service_name'] as String? ?? 'Service';
+          final rawScore = double.tryParse(service['average_score']?.toString() ?? '0') ?? 0.0;
+          final score = rawScore.toDouble() * (rawScore <= 1 ? 100 : 1);
+          final grade = _getGrade(score);
+          final gradeColor = _getGradeColor(score);
+          final icon =
+              serviceIcons[name] ?? Icons.miscellaneous_services_outlined;
+
+          return Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: gradeColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(icon, color: gradeColor, size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              name,
+                              style: AppTextStyles.body.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              '${score.toStringAsFixed(1)}%',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: gradeColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: score / 100,
+                            minHeight: 6,
+                            backgroundColor: const Color(0xFFF0F0F0),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              gradeColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          grade,
+                          style: AppTextStyles.caption.copyWith(
+                            color: gradeColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (!isLast) ...[
+                const SizedBox(height: 16),
+                const Divider(height: 1, color: Color(0xFFF0F0F0)),
+                const SizedBox(height: 16),
+              ],
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+// ─── Project List Tile ────────────────────────────────────────────────────────
+
+class _ProjectListTile extends StatelessWidget {
+  const _ProjectListTile({
+    required this.rank,
+    required this.project,
+    required this.isTop,
+    this.onTap,
+  });
+
+  final int rank;
+  final Map<String, dynamic> project;
+  final bool isTop;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = project['name'] as String? ?? 'Project';
+    final rawProgress =
+        project['progress'] ??
+        project['Progresss'] ??
+        project['progresss'] ??
+        0;
+    final progress = double.tryParse(rawProgress.toString()) ?? 0.0;
+    final rawScore = project['average_score'];
+    final score = rawScore != null
+        ? (double.tryParse(rawScore.toString()) ?? 0.0) *
+              ((double.tryParse(rawScore.toString()) ?? 0.0) <= 1 ? 100 : 1)
+        : progress;
+    final grade = _getGrade(score);
+    final gradeColor = _getGradeColor(score);
+    final rankColor = isTop ? const Color(0xFF34C759) : const Color(0xFFFF3B30);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: rankColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(
+                  '$rank',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: rankColor,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: AppTextStyles.body.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progress / 100,
+                      minHeight: 4,
+                      backgroundColor: const Color(0xFFF0F0F0),
+                      valueColor: AlwaysStoppedAnimation<Color>(gradeColor),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${progress.toStringAsFixed(0)}% complete',
+                    style: AppTextStyles.caption,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: gradeColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                grade,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: gradeColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Incomplete Project Tile ──────────────────────────────────────────────────
+
+class _IncompleteProjectTile extends StatelessWidget {
+  const _IncompleteProjectTile({required this.project, this.onTap});
+  final Map<String, dynamic> project;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = project['name'] as String? ?? 'Project';
+    final rawProgress =
+        project['progress'] ??
+        project['Progresss'] ??
+        project['progresss'] ??
+        0;
+    final progress = double.tryParse(rawProgress.toString()) ?? 0.0;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFFF9500).withOpacity(0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF9500).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.pending_outlined,
+                color: Color(0xFFFF9500),
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: AppTextStyles.body.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${progress.toStringAsFixed(0)}% completed',
+                    style: AppTextStyles.caption.copyWith(
+                      color: const Color(0xFFFF9500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 14,
+              color: Color(0xFF8E8E93),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Section Header ───────────────────────────────────────────────────────────
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.title,
+    required this.icon,
+    this.iconColor,
+  });
+  final String title;
+  final IconData icon;
+  final Color? iconColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = iconColor ?? AppColors.primary;
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: color),
+        const SizedBox(width: 8),
+        Text(title, style: AppTextStyles.sectionTitle),
+      ],
+    );
+  }
+}
+
+// ─── Empty State ──────────────────────────────────────────────────────────────
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Center(child: Text(message, style: AppTextStyles.secondary)),
+    );
+  }
+}
+
+// ─── Grade Helpers ────────────────────────────────────────────────────────────
+
+String _getGrade(double score) {
+  if (score >= 90) return 'Excellent';
+  if (score >= 80) return 'Good';
+  if (score >= 75) return 'Acceptable';
+  return 'Needs Improvement';
+}
+
+Color _getGradeColor(double score) {
+  if (score >= 90) return const Color(0xFF34C759);
+  if (score >= 80) return const Color(0xFF4A90D9);
+  if (score >= 75) return const Color(0xFFFF9500);
+  return const Color(0xFFFF3B30);
 }

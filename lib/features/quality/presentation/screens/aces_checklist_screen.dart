@@ -7,6 +7,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../projects/domain/entities/project_list_item.dart';
 import '../providers/quality_api_provider.dart';
+import '../../domain/entities/inspection_entities.dart';
 import '../widgets/rating_selector.dart';
 
 class AcesChecklistScreen extends ConsumerWidget {
@@ -48,76 +49,7 @@ class AcesChecklistScreen extends ConsumerWidget {
                     const SizedBox(height: AppDimensions.sm),
                 itemBuilder: (context, index) {
                   final item = items[index];
-                  final borderColor = _scoreColor(item.score);
-
-                  return AppCard(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          left: BorderSide(color: borderColor, width: 4),
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.sm,
-                          vertical: AppDimensions.xs,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                _ItemNumberCircle(number: item.itemNumber),
-                                const SizedBox(width: AppDimensions.sm),
-                                Expanded(
-                                  child: Text(
-                                    item.textAr,
-                                    textDirection: TextDirection.rtl,
-                                    style: AppTextStyles.cardTitle,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppDimensions.xs),
-                            Text(item.textEn, style: AppTextStyles.secondary),
-                            const SizedBox(height: AppDimensions.sm),
-                            RatingSelector(
-                              value: item.score,
-                              label: 'Score',
-                              onChanged: (score) async {
-                                if (score == null) return;
-                                await ref
-                                    .read(
-                                      checklistControllerProvider(
-                                        serviceId,
-                                      ).notifier,
-                                    )
-                                    .saveScore(item.id, score);
-                              },
-                            ),
-                            const SizedBox(height: AppDimensions.sm),
-                            TextField(
-                              decoration: const InputDecoration(
-                                labelText: 'Comment',
-                              ),
-                              controller: TextEditingController(
-                                text: item.comment ?? '',
-                              ),
-                              onSubmitted: (value) {
-                                ref
-                                    .read(
-                                      checklistControllerProvider(
-                                        serviceId,
-                                      ).notifier,
-                                    )
-                                    .saveComment(item.id, value);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
+                  return _ChecklistItemCard(item: item, serviceId: serviceId);
                 },
               ),
               Positioned(
@@ -165,6 +97,155 @@ class AcesChecklistScreen extends ConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text(error.toString())),
+      ),
+    );
+  }
+}
+
+class _ChecklistItemCard extends ConsumerStatefulWidget {
+  const _ChecklistItemCard({
+    required this.item,
+    required this.serviceId,
+  });
+
+  final ChecklistItem item;
+  final String serviceId;
+
+  @override
+  ConsumerState<_ChecklistItemCard> createState() => _ChecklistItemCardState();
+}
+
+class _ChecklistItemCardState extends ConsumerState<_ChecklistItemCard> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+  late String _lastSavedValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastSavedValue = widget.item.comment ?? '';
+    _controller = TextEditingController(text: _lastSavedValue);
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ChecklistItemCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.item.comment != oldWidget.item.comment) {
+      final newComment = widget.item.comment ?? '';
+      if (_controller.text != newComment) {
+        _controller.text = newComment;
+        _lastSavedValue = newComment;
+      }
+    }
+  }
+
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus) {
+      _saveComment();
+    }
+  }
+
+  Future<void> _saveComment() async {
+    final value = _controller.text.trim();
+    if (value == _lastSavedValue) return;
+
+    try {
+      await ref
+          .read(checklistControllerProvider(widget.serviceId).notifier)
+          .saveComment(widget.item.id, value);
+      _lastSavedValue = value;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Comment saved'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save comment: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = _scoreColor(widget.item.score);
+
+    return AppCard(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(color: borderColor, width: 4),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.sm,
+            vertical: AppDimensions.xs,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  _ItemNumberCircle(number: widget.item.itemNumber),
+                  const SizedBox(width: AppDimensions.sm),
+                  Expanded(
+                    child: Text(
+                      widget.item.textAr,
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.cardTitle,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppDimensions.xs),
+              Text(widget.item.textEn, style: AppTextStyles.secondary),
+              const SizedBox(height: AppDimensions.sm),
+              RatingSelector(
+                value: widget.item.score,
+                label: 'Score',
+                onChanged: (score) async {
+                  if (score == null) return;
+                  await ref
+                      .read(checklistControllerProvider(widget.serviceId).notifier)
+                      .saveScore(widget.item.id, score);
+                },
+              ),
+              const SizedBox(height: AppDimensions.sm),
+              TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                decoration: InputDecoration(
+                  labelText: 'Add comment...',
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.check_circle_outline),
+                    color: AppColors.success,
+                    onPressed: _saveComment,
+                  ),
+                ),
+                onSubmitted: (_) => _saveComment(),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

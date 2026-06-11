@@ -22,18 +22,6 @@ class AppShellScaffold extends StatelessWidget {
       icon: Icons.apartment_outlined,
     ),
     _ShellTab(
-      label: AppStrings.tabTasks,
-      title: AppStrings.tabTasks,
-      subtitle: AppStrings.shellHeaderTasksSubtitle,
-      icon: Icons.task_alt_outlined,
-    ),
-    _ShellTab(
-      label: AppStrings.tabMap,
-      title: AppStrings.tabMap,
-      subtitle: AppStrings.shellHeaderMapSubtitle,
-      icon: Icons.map_outlined,
-    ),
-    _ShellTab(
       label: AppStrings.tabProfile,
       title: AppStrings.tabProfile,
       subtitle: AppStrings.shellHeaderProfileSubtitle,

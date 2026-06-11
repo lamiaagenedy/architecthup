@@ -20,10 +20,10 @@ class QualityRemoteDatasource {
       return rows
           .map(
             (json) => InspectionService(
-              id: '${json['s_id']}',
+              id: json['s_id']?.toString() ?? '',
               name: json['name'] as String? ?? '',
-              rating: (json['rating'] as num?)?.toDouble() ?? 0,
-              progress: (json['progress'] as num?)?.toInt() ?? 0,
+              rating: (num.tryParse(json['rating']?.toString() ?? ''))?.toDouble() ?? 0,
+              progress: (num.tryParse(json['progress']?.toString() ?? ''))?.toInt() ?? 0,
               projectId: projectId,
             ),
           )
@@ -43,11 +43,11 @@ class QualityRemoteDatasource {
       return rows
           .map(
             (json) => ChecklistItem(
-              id: '${json['C_ID']}',
-              itemNumber: (json['item_number'] as num?)?.toInt() ?? 0,
+              id: json['C_ID']?.toString() ?? '',
+              itemNumber: (num.tryParse(json['item_number']?.toString() ?? ''))?.toInt() ?? 0,
               textAr: json['text_ar'] as String? ?? '',
               textEn: json['text_en'] as String? ?? json['Name'] as String? ?? '',
-              score: (json['Score'] as num?)?.toInt(),
+              score: num.tryParse(json['Score']?.toString() ?? '')?.toInt(),
               comment: json['Comment'] as String?,
             ),
           )
@@ -90,20 +90,20 @@ class QualityRemoteDatasource {
       final services = (data['services'] as List? ?? [])
           .map(
             (item) => ServiceStats(
-              id: '${(item as Map)['s_id']}',
+              id: (item as Map)['s_id']?.toString() ?? '',
               name: item['name'] as String? ?? '',
-              rating: (item['rating'] as num?)?.toDouble() ?? 0,
-              progress: (item['progress'] as num?)?.toInt() ?? 0,
+              rating: (num.tryParse(item['rating']?.toString() ?? ''))?.toDouble() ?? 0,
+              progress: (num.tryParse(item['progress']?.toString() ?? ''))?.toInt() ?? 0,
               grade: item['grade'] as String? ?? '',
             ),
           )
           .toList();
 
       return ProjectStats(
-        projectId: '${data['project_id']}',
+        projectId: data['project_id']?.toString() ?? '',
         projectName: data['project_name'] as String? ?? '',
-        overallProgress: (data['overall_progress'] as num?)?.toInt() ?? 0,
-        overallScore: (data['overall_score'] as num?)?.toDouble() ?? 0,
+        overallProgress: (num.tryParse(data['overall_progress']?.toString() ?? ''))?.toInt() ?? 0,
+        overallScore: (num.tryParse(data['overall_score']?.toString() ?? ''))?.toDouble() ?? 0,
         grade: data['grade'] as String? ?? '',
         services: services,
       );

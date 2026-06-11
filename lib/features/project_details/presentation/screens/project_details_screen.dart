@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../../app/navigation/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -7,6 +11,7 @@ import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_grade_badge.dart';
+import '../../../manager/presentation/providers/manager_provider.dart';
 import '../../../projects/domain/entities/project_list_item.dart';
 
 class ProjectDetailsScreen extends StatelessWidget {
@@ -100,7 +105,7 @@ class ProjectDetailsScreen extends StatelessWidget {
   }
 }
 
-class ProjectActionsGrid extends StatelessWidget {
+class ProjectActionsGrid extends ConsumerWidget {
   const ProjectActionsGrid({required this.project, super.key});
 
   final ProjectListItem project;
@@ -109,65 +114,76 @@ class ProjectActionsGrid extends StatelessWidget {
     context.push(RouteNames.projectServices(project.id), extra: project);
   }
 
-  void _openStats(BuildContext context) {
-    context.push(
-      '${RouteNames.projectDetails(project.id)}/stats',
-      extra: project,
-    );
-  }
+  Future<void> _downloadPdf(BuildContext context, WidgetRef ref) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              ),
+              SizedBox(width: 16),
+              Text('Generating report...'),
+            ],
+          ),
+          duration: Duration(days: 1),
+        ),
+      );
 
-  void _showComingSoon(BuildContext context) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(const SnackBar(content: Text('Coming Soon')));
+      final bytes = await ref
+          .read(managerRemoteDatasourceProvider)
+          .downloadReportPdf(project.id);
+
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      if (bytes.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to generate report: Empty PDF')),
+        );
+        return;
+      }
+
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/aces-report-${project.id}.pdf');
+      await file.writeAsBytes(bytes);
+
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('PDF saved to ${file.path}')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('PDF download failed: $e')),
+      );
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Row(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: ProjectActionCard(
-                icon: Icons.checklist_rounded,
-                label: 'Inspection',
-                tintColor: AppColors.primary,
-                onTap: () => _openServices(context),
-              ),
-            ),
-            const SizedBox(width: AppDimensions.md),
-            Expanded(
-              child: ProjectActionCard(
-                icon: Icons.analytics_outlined,
-                label: 'Stats',
-                tintColor: AppColors.primary,
-                onTap: () => _openStats(context),
-              ),
-            ),
-          ],
+        Expanded(
+          child: ProjectActionCard(
+            icon: Icons.checklist_rounded,
+            label: 'Inspection',
+            tintColor: AppColors.primary,
+            onTap: () => _openServices(context),
+          ),
         ),
-        const SizedBox(height: AppDimensions.md),
-        Row(
-          children: [
-            Expanded(
-              child: ProjectActionCard(
-                icon: Icons.description_outlined,
-                label: 'Reports',
-                tintColor: AppColors.warning,
-                onTap: () => _showComingSoon(context),
-              ),
-            ),
-            const SizedBox(width: AppDimensions.md),
-            Expanded(
-              child: ProjectActionCard(
-                icon: Icons.chat_bubble_outline_rounded,
-                label: 'Comments',
-                tintColor: AppColors.success,
-                onTap: () => _showComingSoon(context),
-              ),
-            ),
-          ],
+        const SizedBox(width: AppDimensions.md),
+        Expanded(
+          child: ProjectActionCard(
+            icon: Icons.description_outlined,
+            label: 'Report',
+            tintColor: AppColors.warning,
+            onTap: () => _downloadPdf(context, ref),
+          ),
         ),
       ],
     );

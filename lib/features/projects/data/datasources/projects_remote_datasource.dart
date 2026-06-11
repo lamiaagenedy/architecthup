@@ -42,7 +42,7 @@ class ProjectsRemoteDatasource {
     }
 
     return ProjectListItem(
-      id: '${json['p_id']}',
+      id: json['p_id']?.toString() ?? '',
       name: json['name'] as String? ?? 'Untitled',
       location: json['location'] as String? ?? '',
       status: status,
@@ -54,7 +54,7 @@ class ProjectsRemoteDatasource {
       supervisorName: json['supervisor_name'] as String?,
       companyName: json['company_name'] as String?,
       grade: grade,
-      uId: json['u_id']?.toString(),
+      uId: json['u_id']?.toString() ?? '',
     );
   }
 

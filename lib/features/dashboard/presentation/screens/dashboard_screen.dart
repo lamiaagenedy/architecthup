@@ -6,7 +6,6 @@ import '../../../../app/navigation/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/constants/dashboard_strings.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../projects/domain/entities/project_list_item.dart';
 import '../../../projects/presentation/providers/projects_provider.dart';
@@ -16,7 +15,6 @@ import '../widgets/dashboard_attention_section.dart';
 import '../widgets/dashboard_category_summary_section.dart';
 import '../widgets/dashboard_hero_section.dart';
 import '../widgets/dashboard_metric_card.dart';
-import '../widgets/dashboard_my_tasks_section.dart';
 import '../widgets/dashboard_section_header.dart';
 import '../widgets/dashboard_state_views.dart';
 import '../widgets/score_circle.dart';
@@ -46,12 +44,6 @@ class DashboardScreen extends ConsumerWidget {
           onOpenProjects: () {
             context.go(RouteNames.projects);
           },
-          onOpenTasks: () {
-            context.go(RouteNames.tasks);
-          },
-          onOpenMap: () {
-            context.go(RouteNames.map);
-          },
           onOpenProfile: () {
             context.go(RouteNames.profile);
           },
@@ -68,8 +60,8 @@ class DashboardScreen extends ConsumerWidget {
       loading: DashboardLoadingView.new,
       error: (error, stackTrace) => DashboardErrorView(
         onRetry: () {
-          ref.refresh(projectsListProvider);
-          ref.refresh(dashboardSnapshotProvider);
+          ref.invalidate(projectsListProvider);
+          ref.invalidate(dashboardSnapshotProvider);
         },
         message: _resolveErrorMessage(error),
       ),
@@ -91,8 +83,6 @@ class _DashboardOperationsContent extends StatelessWidget {
     required this.userName,
     required this.onRefresh,
     required this.onOpenProjects,
-    required this.onOpenTasks,
-    required this.onOpenMap,
     required this.onOpenProfile,
     required this.onOpenProjectChecklist,
     required this.onOpenCategoryProjects,
@@ -102,8 +92,6 @@ class _DashboardOperationsContent extends StatelessWidget {
   final String userName;
   final Future<void> Function() onRefresh;
   final VoidCallback onOpenProjects;
-  final VoidCallback onOpenTasks;
-  final VoidCallback onOpenMap;
   final VoidCallback onOpenProfile;
   final ValueChanged<ProjectListItem> onOpenProjectChecklist;
   final VoidCallback onOpenCategoryProjects;
@@ -141,18 +129,7 @@ class _DashboardOperationsContent extends StatelessWidget {
                   attentionItems: viewModel.attentionItems,
                   onOpenProjectChecklist: onOpenProjectChecklist,
                 ),
-                const SizedBox(height: AppDimensions.xl),
-                _QuickActionsSection(
-                  onOpenProjects: onOpenProjects,
-                  onOpenTasks: onOpenTasks,
-                  onOpenMap: onOpenMap,
-                  onOpenProfile: onOpenProfile,
-                ),
-                const SizedBox(height: AppDimensions.xl),
-                _PersonalTasksSnapshotSection(
-                  tasks: viewModel.pendingTasks,
-                  onOpenTasks: onOpenTasks,
-                ),
+
               ],
             ),
           ),
@@ -496,124 +473,7 @@ class _InspectionMetricCard extends StatelessWidget {
   }
 }
 
-class _QuickActionsSection extends StatelessWidget {
-  const _QuickActionsSection({
-    required this.onOpenProjects,
-    required this.onOpenTasks,
-    required this.onOpenMap,
-    required this.onOpenProfile,
-  });
 
-  final VoidCallback onOpenProjects;
-  final VoidCallback onOpenTasks;
-  final VoidCallback onOpenMap;
-  final VoidCallback onOpenProfile;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const DashboardSectionHeader(
-          eyebrow: DashboardStrings.sectionQuickActionsEyebrow,
-          title: DashboardStrings.sectionQuickActionsTitle,
-          subtitle: DashboardStrings.sectionQuickActionsSubtitle,
-        ),
-        const SizedBox(height: AppDimensions.lg),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _QuickActionPill(
-                icon: Icons.apartment_rounded,
-                label: DashboardStrings.actionProjects,
-                onTap: onOpenProjects,
-              ),
-              const SizedBox(width: AppDimensions.sm),
-              _QuickActionPill(
-                icon: Icons.task_alt_rounded,
-                label: DashboardStrings.actionTasks,
-                onTap: onOpenTasks,
-              ),
-              const SizedBox(width: AppDimensions.sm),
-              _QuickActionPill(
-                icon: Icons.map_rounded,
-                label: DashboardStrings.actionMap,
-                onTap: onOpenMap,
-              ),
-              const SizedBox(width: AppDimensions.sm),
-              _QuickActionPill(
-                icon: Icons.person_rounded,
-                label: DashboardStrings.actionProfile,
-                onTap: onOpenProfile,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _QuickActionPill extends StatelessWidget {
-  const _QuickActionPill({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Material(
-      color: colorScheme.primary,
-      borderRadius: BorderRadius.circular(999),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(999),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.md,
-            vertical: AppDimensions.sm,
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: colorScheme.onPrimary, size: AppDimensions.md),
-              const SizedBox(width: AppDimensions.xs),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colorScheme.onPrimary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PersonalTasksSnapshotSection extends StatelessWidget {
-  const _PersonalTasksSnapshotSection({
-    required this.tasks,
-    required this.onOpenTasks,
-  });
-
-  final List<DashboardTaskSnapshotItem> tasks;
-  final VoidCallback onOpenTasks;
-
-  @override
-  Widget build(BuildContext context) {
-    return DashboardMyTasksSection(tasks: tasks, onOpenTasks: onOpenTasks);
-  }
-}
 
 Color _scoreToneColor(BuildContext context, int score) {
   final colorScheme = Theme.of(context).colorScheme;
